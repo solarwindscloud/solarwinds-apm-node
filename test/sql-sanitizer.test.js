@@ -270,7 +270,62 @@ describe('sqlSanitizer aggressive cleanup when \' involved', function () {
     // note: SELECT 'normal' 'jake's' 'this is tow'' this is three ''' WHERE 'abc'de GROUP BY 'wait'what'sthat' is NOT valid SQL
     const sql = "SELECT 'normal' 'jake's' 'this is tow'' this is three ''' WHERE 'abc'de GROUP BY 'wait'what'sthat'"
     const result = sqlSanitizer.sanitize(sql)
-    console.log(result)
     expect(result).equal('SELECT ?')
+  })
+})
+
+describe('sqlSanitizer drop double quotes when option is true', function () {
+  it('should sanitizes a in list', function () {
+    const sql = 'SELECT "game_types".* FROM "game_types" WHERE "game_types"."game_id" IN (1162)'
+    const result = sqlSanitizer.sanitize(sql, true)
+    expect(result).equal('SELECT ?.* FROM ? WHERE ?.? IN (?)')
+  })
+
+  it('should sdouble quoted field names in string', function () {
+    const sql = "SELECT \"comments\".* FROM \"comments\" WHERE \"comments\".\"commentable_id\" = 2798 AND \"comments\".\"commentable_type\" = 'Video' AND \"comments\".\"parent_id\" IS NULL ORDER BY comments.created_at DESC"
+    const result = sqlSanitizer.sanitize(sql, true)
+    expect(result).equal('SELECT ?.* FROM ? WHERE ?.? = ? AND ?.? = ? AND ?.? IS NULL ORDER BY comments.created_at DESC')
+  })
+
+  // cases from: https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/4593
+  // our sanitier is EXPECTED to be overly aggressive
+  it('should sanitizes double quoted field names in string (aggressive on SQL92)', function () {
+    const sql = 'select "userId" from "adminUsers" where "lastName" = \'jones\''
+    const result = sqlSanitizer.sanitize(sql, true)
+    expect(result).equal('select ? from ? where ? = ?')
+  })
+
+  it('should sanitizes double quoted values in string (aggressive on SQL92)', function () {
+    const sql = 'select * from Foo where Bar = "baz"'
+    const result = sqlSanitizer.sanitize(sql, true)
+    expect(result).equal('select * from Foo where Bar = ?')
+  })
+
+  it('should sanitizes double quoted values that include "', function () {
+    const sql = 'select * from Foo where Bar = "b\"az"'
+    const result = sqlSanitizer.sanitize(sql, true)
+    expect(result).equal('select * from Foo where Bar = ?')
+  })
+})
+
+describe('sqlSanitizer not drop double quotes when option is false', function () {
+  // cases from: https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/4593
+  // our sanitier is EXPECTED to be overly aggressive
+  it('should sanitizes double quoted field names in string (aggressive on SQL92)', function () {
+    const sql = 'select "userId" from "adminUsers" where "lastName" = \'jones\''
+    const result = sqlSanitizer.sanitize(sql, false)
+    expect(result).equal('select "userId" from "adminUsers" where "lastName" = ?')
+  })
+
+  it('should sanitizes double quoted values in string (aggressive on SQL92)', function () {
+    const sql = 'select * from Foo where Bar = "baz"'
+    const result = sqlSanitizer.sanitize(sql, false)
+    expect(result).equal('select * from Foo where Bar = "baz"')
+  })
+
+  it('should sanitizes double quoted values that include "', function () {
+    const sql = 'select * from Foo where Bar = "b\"az"'
+    const result = sqlSanitizer.sanitize(sql, false)
+    expect(result).equal('select * from Foo where Bar = "b"az"')
   })
 })
