@@ -64,6 +64,7 @@
 | `enabled` | *boolean* | `true` |
 | `collectBacktraces` | *boolean* | `true` |
 | `sanitizeSql` | *boolean* | `true` |
+| `sanitizerDropDoubleQuotes` | *boolean* | `false` |
 | `tagSql` | *boolean* | `false` |
 
 ## co-render
@@ -144,6 +145,7 @@
 | `enabled` | *boolean* | `true` |
 | `collectBacktraces` | *boolean* | `true` |
 | `sanitizeSql` | *boolean* | `true` |
+| `sanitizerDropDoubleQuotes` | *boolean* | `false` |
 | `tagSql` | *boolean* | `false` |
 
 ## oracledb
@@ -152,6 +154,7 @@
 | `enabled` | *boolean* | `true` |
 | `collectBacktraces` | *boolean* | `true` |
 | `sanitizeSql` | *boolean* | `true` |
+| `sanitizerDropDoubleQuotes` | *boolean* | `false` |
 | `tagSql` | *boolean* | `false` |
 
 ## pg
@@ -160,6 +163,7 @@
 | `enabled` | *boolean* | `true` |
 | `collectBacktraces` | *boolean* | `true` |
 | `sanitizeSql` | *boolean* | `true` |
+| `sanitizerDropDoubleQuotes` | *boolean* | `false` |
 | `tagSql` | *boolean* | `false` |
 
 ## raw-body
@@ -186,6 +190,7 @@
 | `enabled` | *boolean* | `true` |
 | `collectBacktraces` | *boolean* | `true` |
 | `sanitizeSql` | *boolean* | `true` |
+| `sanitizerDropDoubleQuotes` | *boolean* | `false` |
 | `tagSql` | *boolean* | `false` |
 
 ## @hapi/vision
