@@ -119,37 +119,6 @@ function makeTests (db_host, host, isReplicaSet) {
     })
   })
 
-  // skip specific tests to faciliate test debugging.
-  beforeEach(function () {
-    const current = this.currentTest
-    // const doThese = {
-    //   databases: true,
-    //   collections: true,
-    //   queries: true,
-    //   indexes: true,
-    //   cursors: true,
-    //   aggregations: true
-    // }
-    // if (current.parent && !(current.parent.title in doThese)) {
-    // }
-    // skip specific titles
-    // const skipTheseTitles = []
-    // if (skipTheseTitles.indexOf(current.title) >= 0) {
-    // }
-    // do only these specific titles
-    const doTheseTitles = [
-      'should drop',
-      'should distinct',
-      'should count'
-    ]
-    if (doTheseTitles.length && doTheseTitles.indexOf(current.title) >= 0) {
-      // ao.logger.addEnabled('span');
-    }
-  })
-  afterEach(function () {
-    // ao.logger.removeEnabled('span');
-  })
-
   //
   // Open a fresh mongodb connection for each test
   //

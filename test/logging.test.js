@@ -1,4 +1,4 @@
-/* global it, describe, before, after, afterEach */
+/* global it, describe, before, afterEach */
 'use strict'
 
 const helper = require('./helper')
@@ -20,52 +20,14 @@ const makeSettings = helper.makeSettings
 const getLevelAndText = helper.getLevelAndText
 
 describe('logging', function () {
-  const levels = ao.logLevel
   const logger = debug.log
 
   before(function () {
     ao.sampleRate = 1000000
-    ao.logLevel = 'error,warn'
-  })
-
-  after(function () {
-    ao.logLevel = levels
   })
 
   afterEach(function () {
     debug.log = logger
-    ao.logLevel = levels
-  })
-
-  it('should set logging', function () {
-    let correct = false
-    const real = debug.enable
-    debug.enable = function (level) {
-      correct = level === 'solarwinds-apm:span'
-      debug.enable = real
-    }
-    ao.logLevel = 'span'
-    expect(ao.logLevel).equal('span')
-    expect(correct).equal(true)
-  })
-
-  it('should add and remove logging', function () {
-    const levels = ao.logLevel.split(',')
-    ao.logLevelAdd('something')
-    levels.push('something')
-    expect(ao.logLevel).equal(levels.join(','))
-
-    ao.logLevelRemove('something')
-    levels.pop()
-    expect(ao.logLevel).equal(levels.join(','))
-  })
-
-  it('should interact with existing debug logging correctly', function () {
-    process.env.DEBUG = 'xyzzy:plover,xyzzy:dragon'
-    ao.logLevel = 'error'
-    expect(process.env.DEBUG.split(',')).include.members(['xyzzy:plover', 'xyzzy:dragon', 'solarwinds-apm:error'])
-    ao.logLevel = ''
-    expect(process.env.DEBUG.split(',')).include.members(['xyzzy:plover', 'xyzzy:dragon'])
   })
 
   it('should log correctly', function () {
@@ -81,23 +43,23 @@ describe('logging', function () {
     expect(called).equal(true, 'logger must be called')
   })
 
-  it('should allow all logging to be suppressed', function () {
-    ao.logLevel = ''
+  it('should log correctly using sub loggers', function () {
+    const msg = 'test logging'
     let called = false
-    let level
-    let text
+    ao.loggers.event.create.enabled = true
+
     debug.log = function (output) {
-      [level, text] = getLevelAndText(output)
+      const [level, text] = getLevelAndText(output)
+      expect(level).equal('solarwinds-apm:event:create')
+      expect(text).equal(msg)
       called = true
     }
+    ao.loggers.event.create.enabled = true
 
-    ao.loggers.error('anything')
-    ao.loggers.warn('nothing')
-    ao.loggers.debug('something')
+    ao.loggers.event.create(msg)
+    expect(called).equal(true, 'logger must be called')
 
-    if (called) {
-      expect(called).equal(false, `log ${level}:${text} should not have been output`)
-    }
+    ao.loggers.event.create.enabled = false
   })
 
   it('should throw when constructing a debounced logger that does not exist', function () {
@@ -322,8 +284,6 @@ describe('logging', function () {
       expect(l.match(pattern, 'each line should contain only default logging levels'))
     })
   })
-
-  it.skip('should handle the extended cls (%c) format', function () {})
 
   //
   // helpers

@@ -1,4 +1,4 @@
-/* global it, describe, before, beforeEach, after, afterEach */
+/* global it, describe, before, beforeEach, after */
 'use strict'
 
 const helper = require('../helper')
@@ -47,19 +47,6 @@ describe(`probes.mysql ${pkg.version}`, function () {
   after(function (done) {
     ao.probes.fs.enabled = true
     emitter.close(done)
-  })
-
-  let prevll
-  beforeEach(function () {
-    if (this.currentTest.title === 'should trace a streaming query') {
-      prevll = ao.logLevel
-    }
-  })
-
-  afterEach(function () {
-    if (this.currentTest.title === 'should trace a streaming query') {
-      ao.logLevel = prevll
-    }
   })
 
   const checks = {

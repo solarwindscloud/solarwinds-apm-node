@@ -30,13 +30,10 @@
 **Kind**: global class  
 
 * [ao](#ao)
-    * [.logLevel](#ao.logLevel)
     * [.loggers](#ao.loggers)
     * [.traceMode](#ao.traceMode)
     * [.tracing](#ao.tracing)
     * [.traceId](#ao.traceId)
-    * [.logLevelAdd(levels)](#ao.logLevelAdd) ⇒ <code>string</code> \| <code>undefined</code>
-    * [.logLevelRemove(levels)](#ao.logLevelRemove) ⇒ <code>string</code> \| <code>undefined</code>
     * [.backtrace()](#ao.backtrace) ⇒ <code>string</code>
     * [.bind(fn)](#ao.bind) ⇒ <code>function</code>
     * [.bindEmitter(em)](#ao.bindEmitter) ⇒ <code>EventEmitter</code>
@@ -56,24 +53,6 @@
     * [.getTraceStringForLog([delimiter])](#ao.getTraceStringForLog) ⇒ <code>string</code>
     * [.wrapLambdaHandler([handler])](#ao.wrapLambdaHandler) ⇒ <code>function</code>
 
-<a name="ao.logLevel"></a>
-
-### ao.logLevel
-**Kind**: static property of [<code>ao</code>](#ao)  
-**Properties**
-
-| Type | Description |
-| --- | --- |
-| <code>string</code> | comma separated list of log settings |
-
-**Example** *(Sets the log settings)*  
-```js
-ao.logLevel = 'warn,error'
-```
-**Example** *(Get the log settings)*  
-```js
-var settings = ao.logLevel
-```
 <a name="ao.loggers"></a>
 
 ### ao.loggers
@@ -125,41 +104,6 @@ Get X-Trace ID of the last event
 | --- | --- |
 | <code>string</code> | the trace ID as a string or undefined if not tracing. |
 
-<a name="ao.logLevelAdd"></a>
-
-### ao.logLevelAdd(levels) ⇒ <code>string</code> \| <code>undefined</code>
-Add log levels to the existing set of log levels.
-
-**Kind**: static method of [<code>ao</code>](#ao)  
-**Returns**: <code>string</code> \| <code>undefined</code> - - the current log levels or undefined if an error  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| levels | <code>string</code> | comma separated list of levels to add |
-
-**Example**  
-```js
-ao.logLevelAdd('warn,debug')
-```
-<a name="ao.logLevelRemove"></a>
-
-### ao.logLevelRemove(levels) ⇒ <code>string</code> \| <code>undefined</code>
-Remove log levels from the current set.
-
-**Kind**: static method of [<code>ao</code>](#ao)  
-**Returns**: <code>string</code> \| <code>undefined</code> - - log levels after removals or undefined if an
-                             error.  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| levels | <code>string</code> | comma separated list of levels to remove |
-
-**Example**  
-```js
-var previousLogLevel = ao.logLevel
-ao.logLevelAdd('debug')
-ao.logLevelRemove(previousLogLevel)
-```
 <a name="ao.backtrace"></a>
 
 ### ao.backtrace() ⇒ <code>string</code>

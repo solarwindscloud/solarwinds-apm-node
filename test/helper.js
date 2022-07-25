@@ -50,23 +50,6 @@ exports.skipTest = function (filename) {
   return true
 }
 
-const env = process.env
-
-// turn off logging if requested. pretty much any falsey string except '' does
-// it. don't accept '' because that used to turn on showing logs, but the
-// default has inverted.
-if (['false', 'f', '0', 'n', 'no'].indexOf(env.SW_APM_TEST_SHOW_LOGS) >= 0) {
-  log.debug('SW_APM_TEST_SHOW_LOGS set falsey, turning off logging')
-  let logs = (process.env.DEBUG || '').split(',')
-  logs = logs.filter(function (item) {
-    return !item.startsWith('solarwinds-apm:')
-  }).join(',')
-  // set to whatever it was with agent items removed
-  process.env.DEBUG = logs
-  // pseudo-log-level that has no logger.
-  ao.logLevel = 'none'
-}
-
 let udpPort = 7832
 
 if (process.env.SW_APM_REPORTER_UDP) {

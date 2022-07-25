@@ -96,14 +96,6 @@ describe('custom', function () {
     main = `${pfx}-test`
   })
 
-  beforeEach(function () {
-    if (this.currentTest.title === 'should continue from previous trace id') {
-      // ao.logLevelAdd('test:*');
-    } else {
-      // ao.logLevelRemove('test:span');
-    }
-  })
-
   //
   // Intercept messages for analysis
   //

@@ -99,12 +99,6 @@ describe('probes.express ' + pkg.version, function () {
     if (this.currentTest) {
       const title = this.currentTest.title
 
-      if (title.indexOf('should allow a custom TransactionName') === 0) {
-        // ao.logLevelAdd('test:messages')
-      } else {
-        ao.logLevelRemove('test:messages')
-      }
-
       if (title === 'UDP might lose a message') {
         // this.skip()
       } else if (title.indexOf('should forward controller/action for') !== 0) {

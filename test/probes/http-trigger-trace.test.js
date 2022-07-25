@@ -6,7 +6,7 @@ const { ao } = require('../1.test-common')
 const expect = require('chai').expect
 const addon = ao.addon
 const aob = addon
-const testdebug = ao.logger.make('testdebug')
+const testdebug = ao.logger('testdebug')
 
 const http = require('http')
 const axios = require('axios')

@@ -1,4 +1,4 @@
-/* global it, describe, before, beforeEach, after, afterEach */
+/* global it, describe, before, after */
 'use strict'
 
 const expect = require('chai').expect
@@ -66,15 +66,6 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
     ao.probes.fs.enabled = fsenabled
     ao.probes[moduleName].collectBacktraces = backtraces
     emitter.close(done)
-  })
-
-  beforeEach(function () {
-    if (this.currentTest.title.indexOf('should connect and queue queries using a') === 0) {
-      // ao.logLevelAdd('test:messages')
-    }
-  })
-  afterEach(function () {
-    // ao.logLevelRemove('test:messages')
   })
 
   //

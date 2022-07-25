@@ -1,4 +1,4 @@
-/* global it, describe, before, beforeEach, after, afterEach */
+/* global it, describe, before, after */
 'use strict'
 
 const helper = require('../helper')
@@ -27,7 +27,6 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
   const ctx = { ao }
   let emitter
   let client
-  let prevDebug
 
   before(function () {
     startTest(__filename)
@@ -115,29 +114,18 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
     })
   })
 
-  beforeEach(function () {
-    prevDebug = ao.logLevel
-    if (this.currentTest.title === 'should trace a prepared query') {
-      // ao.logLevel += ',test:messages'
-    }
-  })
-
-  afterEach(function () {
-    ao.logLevel = prevDebug
-  })
-
-  // test to work around UDP dropped message issue
-  it('UDP might lose a message', function (done) {
-    helper.test(emitter, function (done) {
-      ao.instrument('fake', noop)
-      done()
-    }, [
-      function (msg) {
-        msg.should.have.property('Label').oneOf('entry', 'exit')
-        msg.should.have.property('Layer', 'fake')
-      }
-    ], done)
-  })
+    // test to work around UDP dropped message issue
+    it('UDP might lose a message', function (done) {
+      helper.test(emitter, function (done) {
+        ao.instrument('fake', noop)
+        done()
+      }, [
+        function (msg) {
+          msg.should.have.property('Label').oneOf('entry', 'exit')
+          msg.should.have.property('Layer', 'fake')
+        }
+      ], done)
+    })
 
   it('should be configured to sanitize SQL by default', function () {
     conf.should.have.property('sanitizeSql', true)
