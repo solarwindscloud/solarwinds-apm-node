@@ -1,6 +1,6 @@
 # Two minutes on how it works
 
-`/lib/index.js` runs when the user's code requires `appoptics-apm`. It uses
+`/lib/index.js` runs when the user's code requires `solarwinds-apm`. It uses
 `lib/get-unified-config.js` to determine the configuration and sets up the
 agent. Eventually it reads the files in `lib/probes` and enables patching.
 
@@ -39,22 +39,6 @@ Those are available in the Docker Dev Container.
 * `dev` directory contains anything related to dev environment
 
 
-## Docker Dev Container
-
-1. Start the Docker daemon (on a Mac that would be simplest using Docker desktop).
-2. Create a `.env` file and set: 
-- `APPOPTICS_SERVICE_KEY={any string that looks like a valid service key}`
-- `AO_TEST_COLLECTOR={a url of a collector}`
-- `AO_TEST_SERVICE_KEY={a valid service key for the collector above}`.
-
-3. Run `npm run dev`. This will:
-  - Create a docker container, set it up, and open a shell. Docker container will have all required build tools, nvm and multiple versions of node preinstalled, as well as nano installed, and access to GitHub SSH keys as configured. Repo code is **mounted** to the container.
-  - Set up several "support containers" to be instrumented by tests (e.g. mongodb).
-
-4. To open another shell in same container use: `docker exec -it dev-agent /bin/bash`
-
-The setup script ensures a "clean" work place with each run by removing artifacts and installed modules on each exit.
-
 ## Instrumenting Using Local Code
 
 The Agent dev environment mounts the code into `usr/src/work` and also mounts two siblings directories if they exist: `bindings` and `instrumented`.
@@ -75,7 +59,7 @@ Notes:
 
 1. Open a new shell to the dev environment
 
-`docker exec -it -w /usr/src/instrumented dev-agent bash -c "unset APPOPTICS_REPORTER && unset APPOPTICS_COLLECTOR && bash"`
+`docker exec -it -w /usr/src/instrumented dev-agent bash -c "unset SW_APM_REPORTER && unset SW_APM_COLLECTOR && bash"`
 
 Note:
 - dev environment uses UDP reporter and a local host collector. The new shell shall use the default (production) instead.
@@ -99,36 +83,6 @@ The `test` script in `package.json` runs `test.sh` which then manages how mocha 
 
 The repo includes API docs that are auto generated from code comments.
 `npm run docs:api`.
-
-
-## Dev Repo
-
-The dev repo setup allows to run end-to-end npm release process in a development environment.
-It also greatly simplifies creating and testing CI integrations such as GitHub Actions.
-
-It contains:
-  - dev repo: https://github.com/appoptics/appoptics-apm-node-dev (private, permissions via AppOptics Organization admin)
-
-The dev repo was cloned from the main repo and setup with the appropriate secrets.
-
-To set the main repo to work with the dev repo:
-
-1. `git remote -v`
-2. `git remote add dev git@github.com:appoptics/appoptics-apm-node-dev.git`
-3. `npm run dev:repo:reset`
-
-The script will:
-  - Force push all branches and tags to dev repo.
-  - Remove the local dev repo and clone a fresh one into a sibling directory. 
-  - Modify package.json:
-  ```
-  "name": "appoptics-apm-node-dev",
-  ```
-  - Commit updated `package.json` to `master` all branches.
-
-To start fresh on the dev repo run `npm run dev:repo:reset` again.
-
-When running a Release process on the dev repo, the package will be published to https://www.npmjs.com/package/appoptics-apm-node-dev. It should be [unpublished](https://docs.npmjs.com/unpublishing-packages-from-the-registry) as soon as possible.
 
 
 # Additional Info

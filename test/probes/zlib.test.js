@@ -11,8 +11,6 @@ const zlib = require('zlib')
 
 const expect = require('chai').expect
 
-const semver = require('semver')
-
 const classes = [
   'Deflate',
   'Inflate',
@@ -33,21 +31,19 @@ const methods = [
   'unzip'
 ]
 
-if (semver.gte(process.version, '11.7.0')) {
-  classes.push('BrotliCompress')
-  classes.push('BrotliDecompress')
-  methods.push('brotliCompress')
-  methods.push('brotliDecompress')
-}
+classes.push('BrotliCompress')
+classes.push('BrotliDecompress')
+methods.push('brotliCompress')
+methods.push('brotliDecompress')
 
 describe('probes.zlib once', function () {
   let emitter
 
   //
-  // Intercept appoptics messages for analysis
+  // Intercept messages for analysis
   //
   before(function (done) {
-    emitter = helper.appoptics(done)
+    emitter = helper.backend(done)
     ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
     ao.traceMode = 'always'
   })
@@ -74,10 +70,10 @@ describe('probes.zlib', function () {
   let emitter
 
   //
-  // Intercept appoptics messages for analysis
+  // Intercept messages for analysis
   //
   before(function (done) {
-    emitter = helper.appoptics(done)
+    emitter = helper.backend(done)
     ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
     ao.traceMode = 'always'
   })
@@ -147,10 +143,6 @@ describe('probes.zlib', function () {
 
   // Brotli
   before(function (done) {
-    if (semver.lt(process.version, '11.7.0')) {
-      done()
-      return
-    }
     inputs.BrotliCompress = test
     outputs.BrotliDecompress = test
     zlib.brotliCompress(test, function (err, res) {

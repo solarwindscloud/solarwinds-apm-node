@@ -6,7 +6,7 @@ const { ao } = require('../1.test-common.js')
 
 const pkg = require('amqplib/package')
 
-const mq_host = process.env.AO_TEST_RABBITMQ_3_5 || 'rabbitmq:5672'
+const mq_host = process.env.SW_APM_TEST_RABBITMQ_3_5 || 'rabbitmq:5672'
 
 describe('probes.amqplib ' + pkg.version, function () {
   let emitter
@@ -41,16 +41,16 @@ describe('probes.amqplib ' + pkg.version, function () {
     }
   }
 
-  const xpat = /2B[A-F0-9]{56}0(0|1)/
+  const xpat = /\b00-[0-9a-f]{32}-[0-9a-f]{16}-0[0-1]{1}\b/
 
   //
-  // Intercept appoptics messages for analysis
+  // Intercept messages for analysis
   //
   before(function (done) {
     ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
     ao.traceMode = 'always'
     ao.g.testing(__filename)
-    emitter = helper.appoptics(done)
+    emitter = helper.backend(done)
   })
   after(function (done) {
     emitter.close(done)

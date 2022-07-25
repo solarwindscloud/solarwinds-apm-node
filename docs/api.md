@@ -43,18 +43,17 @@
     * [.setCustomTxNameFunction(probe, fn)](#ao.setCustomTxNameFunction) ⇒ <code>boolean</code>
     * [.readyToSample(ms, [obj])](#ao.readyToSample) ⇒ <code>boolean</code>
     * [.sampling(item)](#ao.sampling) ⇒ <code>boolean</code>
-    * [.xtraceToEvent(xtrace)](#ao.xtraceToEvent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
+    * [.traceToEvent(traceparent)](#ao.traceToEvent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
     * [.instrumentHttp(span, run, [options], res)](#ao.instrumentHttp) ⇒
     * [.instrument(span, run, [options], [callback])](#ao.instrument) ⇒ <code>value</code>
     * [.pInstrument(span, run, [options])](#ao.pInstrument) ⇒ <code>Promise</code>
-    * [.startOrContinueTrace(xtrace, span, runner, [opts], [callback])](#ao.startOrContinueTrace) ⇒ <code>value</code>
-    * [.pStartOrContinueTrace(xtrace, span, run, [opts])](#ao.pStartOrContinueTrace) ⇒ <code>Promise</code>
+    * [.startOrContinueTrace(traceparent, tracestate, span, runner, [opts], [callback])](#ao.startOrContinueTrace) ⇒ <code>value</code>
+    * [.pStartOrContinueTrace(traceparent, tracestate, span, run, [opts])](#ao.pStartOrContinueTrace) ⇒ <code>Promise</code>
     * [.reportError(error)](#ao.reportError)
     * [.reportInfo(data)](#ao.reportInfo)
-    * ~~[.sendMetric(name, [options])](#ao.sendMetric) ⇒ <code>number</code>~~
     * [.sendMetrics(metrics, [gopts])](#ao.sendMetrics) ⇒ [<code>SendMetricsReturn</code>](#SendMetricsReturn)
-    * [.getFormattedTraceId()](#ao.getFormattedTraceId) ⇒ <code>string</code>
-    * [.insertLogObject([object])](#ao.insertLogObject) ⇒ <code>object</code>
+    * [.getTraceObjectForLog()](#ao.getTraceObjectForLog) ⇒ <code>object</code>
+    * [.getTraceStringForLog([delimiter])](#ao.getTraceStringForLog) ⇒ <code>string</code>
     * [.wrapLambdaHandler([handler])](#ao.wrapLambdaHandler) ⇒ <code>function</code>
 
 <a name="ao.logLevel"></a>
@@ -211,12 +210,12 @@ most commonly used when setting custom names for all or most routes.
 ```js
 // custom transaction function signatures for supported probes:
 express: customFunction (req, res)
-hapi: customFunction (request)
+hapi/hapi: customFunction (request)
 ```
 <a name="ao.readyToSample"></a>
 
 ### ao.readyToSample(ms, [obj]) ⇒ <code>boolean</code>
-Check whether the appoptics agent is ready to sample. It will wait up to
+Check whether the agent is ready to sample. It will wait up to
 the specified number of milliseconds before returning.
 
 **Kind**: static method of [<code>ao</code>](#ao)  
@@ -231,7 +230,7 @@ the specified number of milliseconds before returning.
 
 ### ao.sampling(item) ⇒ <code>boolean</code>
 Determine if the sample flag is set for the various forms of
-xtrace data.
+ data.
 
 **Kind**: static method of [<code>ao</code>](#ao)  
 **Returns**: <code>boolean</code> - - true if the sample flag is set else false.  
@@ -240,21 +239,21 @@ xtrace data.
 | --- | --- | --- |
 | item | <code>string</code> \| [<code>Event</code>](#Event) \| <code>addon.Event</code> | the item to get the sampling flag of |
 
-<a name="ao.xtraceToEvent"></a>
+<a name="ao.traceToEvent"></a>
 
-### ao.xtraceToEvent(xtrace) ⇒ <code>addon.Event</code> \| <code>undefined</code>
-Convert an xtrace ID to an event containing the task ID and op ID.
+### ao.traceToEvent(traceparent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
+Convert an traceparent ID to an event containing the task ID and op ID.
 
 **Kind**: static method of [<code>ao</code>](#ao)  
 **Returns**: <code>addon.Event</code> \| <code>undefined</code> - - addon.Event object
                                      containing an internal
-                                     format of the xtrace ID
+                                     format of the traceparent
                                      if valid or undefined
                                      if not.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| xtrace | <code>string</code> | X-Trace ID |
+| traceparent | <code>string</code> | traceparent ID |
 
 <a name="ao.instrumentHttp"></a>
 
@@ -284,7 +283,7 @@ Apply custom instrumentation to a synchronous or async-callback function.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | span | <code>string</code> \| [<code>spanInfoFunction</code>](#spanInfoFunction) |  | span name or span-info function     If `span` is a string then a span is created with that name. If it     is a function it will be run only if tracing; it must return a     spanInfo-compatible object - see instrumenting-a-module.md in guides/. |
-| run | <code>function</code> |  | the function to instrument<br/><br/>     Synchronous `run` function:<br/>     the signature has no callback, e.g., `function run () {...}`. If a     synchronous `run` function throws an error appoptics will report that     error for the span and re-throw the error.<br/>     <br/>     Asynchronous `run` function:<br/>     the signature must include a done callback that is used to let     AppOptics know when your instrumented async code is done running,     e.g., `function run (done) {...}`. In order to report an error for     an async span the done function must be called with an Error object     as the argument. |
+| run | <code>function</code> |  | the function to instrument<br/><br/>     Synchronous `run` function:<br/>     the signature has no callback, e.g., `function run () {...}`. If a     synchronous `run` function throws an error agent will report that     error for the span and re-throw the error.<br/>     <br/>     Asynchronous `run` function:<br/>     the signature must include a done callback that is used to let     agent know when your instrumented async code is done running,     e.g., `function run (done) {...}`. In order to report an error for     an async span the done function must be called with an Error object     as the argument. |
 | [options] | <code>object</code> |  | options |
 | [options.enabled] | <code>boolean</code> | <code>true</code> | enable tracing |
 | [options.collectBacktraces] | <code>boolean</code> | <code>false</code> | collect stack traces. |
@@ -316,7 +315,7 @@ ao.instrument(spanInfo, run)
 // An asynchronous `run` function.
 //
 // Rather than callback directly, you give the done argument.
-// This tells AppOptics when your instrumented code is done running.
+// This tells the agent when your instrumented code is done running.
 //
 // The `callback` function is the callback you normally would have given
 // directly to the code you want to instrument. It receives the same
@@ -377,7 +376,7 @@ ao.pInstrument(spanInfo, run).then(...)
 ```
 <a name="ao.startOrContinueTrace"></a>
 
-### ao.startOrContinueTrace(xtrace, span, runner, [opts], [callback]) ⇒ <code>value</code>
+### ao.startOrContinueTrace(traceparent, tracestate, span, runner, [opts], [callback]) ⇒ <code>value</code>
 Start or continue a trace. Continue is in the sense of continuing a
 trace based on an X-Trace ID received from an external source, e.g.,
 HTTP headers or message queue headers.
@@ -387,13 +386,14 @@ HTTP headers or message queue headers.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| xtrace | <code>string</code> |  | X-Trace ID to continue from or null |
+| traceparent | <code>string</code> |  | traceparent ID to continue from or null |
+| tracestate | <code>string</code> |  | tracestate ID to continue from or null |
 | span | <code>string</code> \| [<code>spanInfoFunction</code>](#spanInfoFunction) |  | name or function returning spanInfo |
 | runner | <code>function</code> |  | run this function. sync if no arguments, async if one. |
 | [opts] | <code>object</code> |  | options |
 | [opts.enabled] | <code>boolean</code> | <code>true</code> | enable tracing |
 | [opts.collectBacktraces] | <code>boolean</code> | <code>false</code> | collect backtraces |
-| [opts.forceNewTrace] | <code>boolean</code> | <code>false</code> | force a new trace, ignoring any existing context (but not xtrace) |
+| [opts.forceNewTrace] | <code>boolean</code> | <code>false</code> | force a new trace, ignoring any existing context (but not traceparent) |
 | [opts.customTxName] | <code>string</code> \| <code>function</code> |  | name or function |
 | [callback] | <code>function</code> |  | this is supplied as the callback if runner is async. |
 
@@ -438,7 +438,7 @@ ao.startOrContinueTrace(
 ```
 <a name="ao.pStartOrContinueTrace"></a>
 
-### ao.pStartOrContinueTrace(xtrace, span, run, [opts]) ⇒ <code>Promise</code>
+### ao.pStartOrContinueTrace(traceparent, tracestate, span, run, [opts]) ⇒ <code>Promise</code>
 Start or continue a trace running a function that returns a promise. Continue is in
 the sense of continuing a trace based on an X-Trace ID received from an external
 source, e.g., HTTP headers or message queue headers.
@@ -448,7 +448,8 @@ source, e.g., HTTP headers or message queue headers.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| xtrace | <code>string</code> |  | X-Trace ID to continue from or null |
+| traceparent | <code>string</code> |  | traceparent ID to continue from or null |
+| tracestate | <code>string</code> |  | tracestate ID to continue from or null |
 | span | <code>string</code> \| [<code>spanInfoFunction</code>](#spanInfoFunction) |  | name or function returning spanInfo |
 | run | <code>function</code> |  | the promise-returning function to instrument |
 | [opts] | <code>object</code> |  | options |
@@ -499,43 +500,6 @@ Report an info event in the current trace.
 | --- | --- | --- |
 | data | <code>object</code> | Data to report in the info event |
 
-<a name="ao.sendMetric"></a>
-
-### ~~ao.sendMetric(name, [options]) ⇒ <code>number</code>~~
-***Deprecated***
-
-**Kind**: static method of [<code>ao</code>](#ao)  
-**Returns**: <code>number</code> - - (-1) for success else an error code.  
-**Throws**:
-
-- <code>TypeError</code> - if an invalid argument is supplied
-
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| name | <code>string</code> |  | the name of the metric |
-| [options] | <code>object</code> |  |  |
-| [options.count] | <code>number</code> | <code>1</code> | the number of observations being reported |
-| [options.value] | <code>number</code> |  | if present the metric is value based and this                                   is the value, or sum of the values if count is                                   greater than 1 |
-| [options.addHostTag] | <code>boolean</code> |  | add {host: hostname} to tags |
-| [options.tags] | <code>object</code> |  | an object containing {tag: value} pairs |
-
-**Example**  
-```js
-// simplest forms
-ao.sendMetric('my.little.count')
-ao.sendMetric('my.little.value', {value: 234.7})
-
-// report two observations
-ao.sendMetric('my.little.count', {count: 2})
-ao.sendMetric('my.little.value', {count: 2, value: 469.4})
-
-// to supply tags that can be used for filtering
-ao.sendMetric('my.little.count', {tags: {status: error}})
-
-// to have a host name tag added automatically
-ao.sendMetric('my.little.count', {addHostTag: true, tags: {status: error}})
-```
 <a name="ao.sendMetrics"></a>
 
 ### ao.sendMetrics(metrics, [gopts]) ⇒ [<code>SendMetricsReturn</code>](#SendMetricsReturn)
@@ -601,71 +565,70 @@ ao.sendMetrics(
   {tags: {class: 'status'}}
 );
 ```
-<a name="ao.getFormattedTraceId"></a>
+<a name="ao.getTraceObjectForLog"></a>
 
-### ao.getFormattedTraceId() ⇒ <code>string</code>
-Get the abbreviated trace ID format used for logs.
+### ao.getTraceObjectForLog() ⇒ <code>object</code>
+Return an object representation of the trace containing trace_id, span_id, trace_flags. The primary intended use for this is
+to insert custom tokens in log packages.
 
 **Kind**: static method of [<code>ao</code>](#ao)  
-**Returns**: <code>string</code> - - 40 character trace identifier - sample flag  
+**Returns**: <code>object</code> - - the trace log  object (e.g. { trace_id:..., span_id: ..., trace_flages: ...})  
 **Example**  
 ```js
-//
-// using morgan in express
-//
-const ao = require('appoptics');
-const Express = require('express');
-const app = new Express();
-const morgan = require('morgan');
-
-// define a format with a new token in it, 'trace-id' or a name of your choosing.
-const logFormat = ':method :url :status :res[content-length] :trace-id - :response-time ms';
-// define a token for the name used in the format. return
-morgan.token('trace-id', function (req, res) {return ao.getFormattedTraceId();});
-const logger = morgan(logFormat, {...});
-app.use(logger);
-// now the 42-character trace-id will be added to log entries.
+log4js.addLayout('json', function (config) {
+  return function (logEvent) {
+    logEvent.context = { ...logEvent.context, ...ao.getTraceObjectForLog() }
+    return JSON.stringify(logEvent)
+  }
+})
+log4js.configure({
+  appenders: {
+    out: { type: 'stdout', layout: { type: 'json' } }
+  },
+  categories: {
+    default: { appenders: ['out'], level: 'info' }
+  }
+})
+const logger = log4js.getLogger()
+logger.info('doing something.')
 ```
-<a name="ao.insertLogObject"></a>
+<a name="ao.getTraceStringForLog"></a>
 
-### ao.insertLogObject([object]) ⇒ <code>object</code>
-Insert the appoptics object containing a trace ID into an object. The primary intended use for this is
-to auto-insert traceIds into JSON-like logs; it's documented so it can be used for unsupported logging
-packages or by those wishing a higher level of control.
+### ao.getTraceStringForLog([delimiter]) ⇒ <code>string</code>
+Return text delimited representation of the trace containing trace_id, span_id, trace_flags. The primary intended use for this is
+to insert custom tokens in log packages.
 
 **Kind**: static method of [<code>ao</code>](#ao)  
-**Returns**: <code>object</code> - - the object with the an additional property, ao, e.g., object.ao === {traceId: ...}.  
+**Returns**: <code>string</code> - - the trace log string (e.g. trace_id:... span_id: ..., trace_flages: ...)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [object] | <code>object</code> | inserts an ao log object containing a traceId property when conditions are met. |
+| [delimiter] | <code>string</code> | the delimiter to use |
 
 **Example**  
 ```js
-const ao = require('appoptics-apm');
-const logger = require('pino')();
-
-// with no object as an argument ao.insertLogObject returns {ao: {traceId: ...}}
-logger.info(ao.insertLogObject(), 'not-so-important message');
-```
-**Example**  
-```js
-const ao = require('appoptics-apm');
-const winston = require('winston');
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-      winston.format.splat(),
-      winston.format.json()
-    ),
-    defaultMeta: {service: 'ao-log-example'},
-    transports: [...]
+log4js.configure({
+  appenders: {
+    out: {
+      type: 'stdout',
+      layout: {
+        type: 'pattern',
+        pattern: '%d %p %c %x{user} says: %m is: %x{trace} %n',
+        tokens: {
+          user: function (logEvent) {
+            return 'Jake'
+          },
+          trace: function () {
+            return typeof ao !=='undefined' ? ao.getTraceStringForLog() : ''
+          }
+        }
+      }
+    }
+  },
+  categories: { default: { appenders: ['out'], level: 'info' } }
 })
-
-logger.info(ao.insertLogObject({
-    message: 'this object is being modified by insertLogObject',
-    more: 'there will be an added ao property'
-}))
+const logger = log4js.getLogger()
+logger.info('token from api')
 ```
 <a name="ao.wrapLambdaHandler"></a>
 

@@ -4,9 +4,9 @@
 
 const helper = require('../helper')
 const { ao } = require('../1.test-common')
+const semver = require('semver')
 
 const expect = require('chai').expect
-const semver = require('semver')
 
 const axios = require('axios')
 
@@ -15,17 +15,11 @@ const opts = {
   name: 'restify-test'
 }
 
-if (semver.satisfies(process.version, '<4') || semver.satisfies(process.version, '>=18')) {
+if (semver.satisfies(process.version, '>=18')) {
   process.exit()
 }
 
 const restify = require('restify')
-
-// restify does fs IO starting in node 8
-if (semver.satisfies(process.version, '>=8.0.0')) {
-  ao.loggers.debug('turning off fs instrumentation')
-  ao.probes.fs.enabled = false
-}
 
 describe(`probes.restify ${pkg.version}`, function () {
   let emitter
@@ -34,10 +28,10 @@ describe(`probes.restify ${pkg.version}`, function () {
   const previousHttpClient = ao.probes['http-client'].enabled
 
   //
-  // Intercept appoptics messages for analysis
+  // Intercept messages for analysis
   //
   before(function (done) {
-    emitter = helper.appoptics(done)
+    emitter = helper.backend(done)
     ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
     ao.traceMode = 'always'
     // restify newer versions of restify use negotiator which does file io
@@ -189,13 +183,8 @@ describe(`probes.restify ${pkg.version}`, function () {
     })
   }
 
-  if (semver.gte(process.version, '6.0.0')) {
-    it('should forward controller/action', testControllerAction)
-    it('should create a span for each middleware', testMiddleware)
-  } else {
-    it.skip('should forward controller/action', testControllerAction)
-    it.skip('should create a span for each middleware', testMiddleware)
-  }
+  it('should forward controller/action', testControllerAction)
+  it('should create a span for each middleware', testMiddleware)
 })
 
 function interpretMetrics (metrics) {
