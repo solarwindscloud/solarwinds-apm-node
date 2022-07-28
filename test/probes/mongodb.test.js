@@ -7,38 +7,24 @@ const { ao } = require('../1.test-common.js')
 const noop = helper.noop
 const addon = ao.addon
 
-const semver = require('semver')
 const mongodb = require('mongodb')
 const MongoClient = mongodb.MongoClient
 
 const expect = require('chai').expect
 
 const pkg = require('mongodb/package.json')
+const semver = require('semver')
 
-// prior to version 3.3.0 mongodb used mongodb-core. from 3.3.0 on mongodb
-// has incorporated those functions into its own codebase.
-const moduleName = semver.gte(pkg.version, '3.3.0') ? 'mongodb' : 'mongodb-core'
-
-let hosts = {
-  2.4: process.env.SW_APM_TEST_MONGODB_2_4 || 'mongo_2_4:27017',
+const hosts = {
   2.6: process.env.SW_APM_TEST_MONGODB_2_6 || 'mongo_2_6:27017',
-  '3.0': process.env.SW_APM_TEST_MONGODB_3_0 || 'mongo_3_0:27017',
+  '3.x': process.env.SW_APM_TEST_MONGODB_3_0 || 'mongo_3:27017',
+  '4.x': process.env.SW_APM_TEST_MONGODB_4_0 || 'mongo_4:27017',
+  '5.x': process.env.SW_APM_TEST_MONGODB_5_0 || 'mongo_5:27017',
   'replica set': process.env.SW_APM_TEST_MONGODB_SET
 }
 
-// version 3 of mongodb-core removed the 2.4 protocol driver. and mongodb 3.0.0
-// uses mongodb-core 3.0.0
-if (semver.gte(pkg.version, '3.0.0')) {
-  delete hosts['2.4']
-}
-
-// if travis reset for now.
-if (process.env.CI === 'true' && process.env.TRAVIS === 'true') {
-  hosts = {
-    '3+': process.env.SW_APM_TEST_MONGODB_3 || 'localhost:27017',
-    'replica set': process.env.SW_APM_TEST_MONGODB_SET
-  }
-}
+// see https://www.mongodb.com/docs/drivers/node/current/compatibility/
+if (semver.gte(pkg.version, '4.2.0')) delete hosts[2.6]
 
 // use AO_IX if present. It provides a unique ID to prevent collisions
 // during matrix testing. It's not needed when testing only one instance
@@ -75,6 +61,11 @@ describe('probes.mongodb UDP', function () {
       }
     ], done)
   })
+
+  it('should be configured to sanitize objects by default', function () {
+    ao.probes.mongodb.should.have.property('sanitizeObject', true)
+    ao.probes.mongodb.sanitizeObject = false
+  })
 })
 
 describe(`probes.mongodb ${pkg.version}`, function () {
@@ -105,49 +96,20 @@ function makeTests (db_host, host, isReplicaSet) {
   //
   beforeEach(function (done) {
     ao.probes.fs.enabled = false
+    ao.probes.dns.enabled = false
     ao.sampleRate = addon.MAX_SAMPLE_RATE
     ao.traceMode = 'always'
-    ao.probes[moduleName].collectBacktraces = false
+    ao.probes.mongodb.collectBacktraces = false
     emitter = helper.backend(function () {
       done()
     })
   })
   afterEach(function (done) {
     ao.probes.fs.enabled = true
+    ao.probes.dns.enabled = true
     emitter.close(function () {
       done()
     })
-  })
-
-  // skip specific tests to faciliate test debugging.
-  beforeEach(function () {
-    const current = this.currentTest
-    // const doThese = {
-    //   databases: true,
-    //   collections: true,
-    //   queries: true,
-    //   indexes: true,
-    //   cursors: true,
-    //   aggregations: true
-    // }
-    // if (current.parent && !(current.parent.title in doThese)) {
-    // }
-    // skip specific titles
-    // const skipTheseTitles = []
-    // if (skipTheseTitles.indexOf(current.title) >= 0) {
-    // }
-    // do only these specific titles
-    const doTheseTitles = [
-      'should drop',
-      'should distinct',
-      'should count'
-    ]
-    if (doTheseTitles.length && doTheseTitles.indexOf(current.title) >= 0) {
-      // ao.logger.addEnabled('span');
-    }
-  })
-  afterEach(function () {
-    // ao.logger.removeEnabled('span');
   })
 
   //
@@ -168,64 +130,33 @@ function makeTests (db_host, host, isReplicaSet) {
 
     let server
 
-    if (hosts.length > 1) {
-      const options = {
-        setName: 'default'
+    const host = hosts[0]
+    const mongoOptions = {}
+
+    // Connection URL
+    const url = `mongodb://${host.host}:${host.port}`
+    // const server = new MongoClient(url, { useUnifiedTopology: true })
+
+    // server = new mongodb.Server(host.host, host.port)
+    const mongoClient = new MongoClient(url, mongoOptions)
+
+    mongoClient.connect((err, _client) => {
+      ao.loggers.test.debug('mongoClient() connect callback', err)
+      if (err) {
+        // eslint-disable-next-line no-console
+        console.log('error connecting', err)
+        return done(err)
       }
-      const servers = []
-      hosts.forEach(function (host) {
-        servers.push(new mongodb.Server(host.host, host.port))
+      ctx.server = server
+      ctx.client = _client
+      ctx.mongo = db = _client.db(dbn)
+      ctx.collection = db.collection(cn)
+
+      db.command({ dropDatabase: 1 }, function (err) {
+        ao.loggers.test.debug('before() dropDatabase callback', err)
+        done()
       })
-      server = new mongodb.ReplSet(servers, options)
-      const mongoClient = new MongoClient(server, {})
-
-      mongoClient.connect((err, _client) => {
-        ao.loggers.test.debug('mongoClient() connect callback', err)
-        if (err) {
-          // eslint-disable-next-line no-console
-          console.log('error connecting', err)
-          return done(err)
-        }
-        ctx.server = server
-        ctx.client = _client
-        ctx.mongo = db = _client.db(dbn)
-        ctx.collection = db.collection(cn)
-
-        db.command({ dropDatabase: 1 }, function (err) {
-          ao.loggers.test.debug('before() dropDatabase callback', err)
-          done()
-        })
-      })
-    } else {
-      const host = hosts[0]
-      const mongoOptions = {}
-      let mongoClient
-
-      if (semver.gte(pkg.version, '3.0.0')) {
-        server = new mongodb.Server(host.host, host.port)
-        mongoClient = new MongoClient(server, mongoOptions)
-      } else {
-        throw new Error(`mongodb v${pkg.version} is not supported`)
-      }
-
-      mongoClient.connect((err, _client) => {
-        ao.loggers.test.debug('mongoClient() connect callback', err)
-        if (err) {
-          // eslint-disable-next-line no-console
-          console.log('error connecting', err)
-          return done(err)
-        }
-        ctx.server = server
-        ctx.client = _client
-        ctx.mongo = db = _client.db(dbn)
-        ctx.collection = db.collection(cn)
-
-        db.command({ dropDatabase: 1 }, function (err) {
-          ao.loggers.test.debug('before() dropDatabase callback', err)
-          done()
-        })
-      })
-    }
+    })
   })
   after(function () {
     if (ctx.client) {
@@ -238,6 +169,7 @@ function makeTests (db_host, host, isReplicaSet) {
       msg.should.have.property('Spec', 'query')
       msg.should.have.property('Flavor', 'mongodb')
       msg.should.have.property('RemoteHost')
+
       expect(msg.RemoteHost).oneOf(db_host.split(','))
     },
     common: function (msg) {
@@ -245,12 +177,12 @@ function makeTests (db_host, host, isReplicaSet) {
     },
     entry: function (msg) {
       const explicit = `${msg.Layer}:${msg.Label}`
-      expect(explicit).equal(`${moduleName}:entry`, 'message Layer and Label must be correct')
+      expect(explicit).equal('mongodb:entry', 'message Layer and Label must be correct')
       check.base(msg)
     },
     exit: function (msg) {
       const explicit = `${msg.Layer}:${msg.Label}`
-      expect(explicit).equal(`${moduleName}:exit`, 'message Layer and Label must be correct')
+      expect(explicit).equal('mongodb:exit', 'message Layer and Label must be correct')
     }
   }
 
@@ -519,14 +451,7 @@ function makeTests (db_host, host, isReplicaSet) {
           check.exit(msg)
         }
 
-        const steps = [entry]
-
-        if (isReplicaSet && moduleName === 'mongodb-core') {
-          steps.push(entry)
-          steps.push(exit)
-        }
-
-        steps.push(exit)
+        const steps = [entry, exit]
 
         helper.test(emitter, function (done) {
           ctx.collection.distinct(
@@ -539,24 +464,24 @@ function makeTests (db_host, host, isReplicaSet) {
 
       it('should count', function (done) {
         const query = { a: 1 }
+        const pipeline = '[{"$match":{"a":1}},{"$group":{"_id":1,"n":{"$sum":1}}}]'
 
         function entry (msg) {
           check.entry(msg)
           check.common(msg)
-          msg.should.have.property('QueryOp', 'count')
-          msg.should.have.property('Query', JSON.stringify(query))
+          msg.should.have.property('QueryOp').oneOf('count', 'aggregate')
+          if (msg.QueryOp === 'count') {
+            msg.should.have.property('Query', JSON.stringify(query))
+          } else {
+            msg.should.have.property('Pipeline', pipeline)
+          }
         }
 
         function exit (msg) {
           check.exit(msg)
         }
 
-        const steps = [entry]
-        if (isReplicaSet && moduleName === 'mongodb-core') {
-          steps.push(entry)
-          steps.push(exit)
-        }
-        steps.push(exit)
+        const steps = [entry, exit]
 
         helper.test(emitter, function (done) {
           ctx.collection.count(
@@ -626,13 +551,6 @@ function makeTests (db_host, host, isReplicaSet) {
     },
 
     indexes: function () {
-      if (host === '2.4') {
-        it.skip('should create_indexes', noop)
-        it.skip('should reindex', noop)
-        it.skip('should drop_indexes', noop)
-        return
-      }
-
       it('should create_indexes', function (done) {
         const index = {
           key: { a: 1, b: 2 },
@@ -666,29 +584,31 @@ function makeTests (db_host, host, isReplicaSet) {
         }, steps, done)
       })
 
-      it('should reindex', function (done) {
-        function entry (msg) {
-          check.entry(msg)
-          check.common(msg)
-          msg.should.have.property('QueryOp', 'reindex')
-        }
+      if (semver.lt(pkg.version, '4.0.0')) {
+        it('should reindex', function (done) {
+          function entry (msg) {
+            check.entry(msg)
+            check.common(msg)
+            msg.should.have.property('QueryOp', 'reindex')
+          }
 
-        function exit (msg) {
-          check.exit(msg)
-        }
+          function exit (msg) {
+            check.exit(msg)
+          }
 
-        const steps = [entry]
-        if (isReplicaSet) {
-          steps.push(entry)
+          const steps = [entry]
+          if (isReplicaSet) {
+            steps.push(entry)
+            steps.push(exit)
+          }
           steps.push(exit)
-        }
-        steps.push(exit)
 
-        helper.test(emitter, function (done) {
-          ctx.collection.reIndex()
-            .then(results => done())
-        }, steps, done)
-      })
+          helper.test(emitter, function (done) {
+            ctx.collection.reIndex()
+              .then(results => done())
+          }, steps, done)
+        })
+      }
 
       it('should drop_indexes', function (done) {
         function entry (msg) {
@@ -735,52 +655,51 @@ function makeTests (db_host, host, isReplicaSet) {
     },
 
     aggregations: function () {
-      it('should group', function (done) {
-        const group = {
-          ns: `${dbn}.data-${dbn}`,
-          key: {},
-          initial: { count: 0 },
-          $reduce: function (doc, out) { out.count++ }.toString(),
-          out: 'inline',
-          cond: { a: { $gte: 0 } }
+      if (semver.lt(pkg.version, '4.0.0')) {
+        if (host === '2.6' || host === '3.x') {
+          it('should group', function (done) {
+            const group = {
+              ns: `${dbn}.data-${dbn}`,
+              key: {},
+              initial: { count: 0 },
+              $reduce: function (doc, out) { out.count++ }.toString(),
+              out: 'inline',
+              cond: { a: { $gte: 0 } }
+            }
+
+            function entry (msg) {
+              check.entry(msg)
+              check.common(msg)
+              msg.should.have.property('QueryOp', 'group')
+              msg.should.have.property('Group_Reduce', group.$reduce.toString())
+              msg.should.have.property('Group_Initial', JSON.stringify(group.initial))
+              msg.should.have.property('Group_Condition', JSON.stringify(group.cond))
+              msg.should.have.property('Group_Key', JSON.stringify(group.key))
+            }
+
+            function exit (msg) {
+              check.exit(msg)
+            }
+
+            const steps = [entry]
+
+            if (isReplicaSet) {
+              steps.push(entry)
+              steps.push(exit)
+            }
+
+            steps.push(exit)
+
+            helper.test(emitter, function (done) {
+              ctx.collection.group(
+                {},
+                { a: { $gte: 0 } },
+                { count: 0 },
+                function (doc, out) { out.count++ }.toString()
+              ).then(results => done())
+            }, steps, done)
+          })
         }
-
-        function entry (msg) {
-          check.entry(msg)
-          check.common(msg)
-          msg.should.have.property('QueryOp', 'group')
-          msg.should.have.property('Group_Reduce', group.$reduce.toString())
-          msg.should.have.property('Group_Initial', JSON.stringify(group.initial))
-          msg.should.have.property('Group_Condition', JSON.stringify(group.cond))
-          msg.should.have.property('Group_Key', JSON.stringify(group.key))
-        }
-
-        function exit (msg) {
-          check.exit(msg)
-        }
-
-        const steps = [entry]
-
-        if (isReplicaSet) {
-          steps.push(entry)
-          steps.push(exit)
-        }
-
-        steps.push(exit)
-
-        helper.test(emitter, function (done) {
-          ctx.collection.group(
-            {},
-            { a: { $gte: 0 } },
-            { count: 0 },
-            function (doc, out) { out.count++ }.toString()
-          ).then(results => done())
-        }, steps, done)
-      })
-
-      if (host === '2.4') {
-        it.skip('should map_reduce', noop)
-        return
       }
 
       it('should map_reduce', function (done) {

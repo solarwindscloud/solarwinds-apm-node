@@ -28,9 +28,10 @@ jobs:
         SW_APM_TEST_COLLECTOR: ${{ secrets.SW_APM_TEST_COLLECTOR }}
         SW_APM_TEST_CASSANDRA_2_2: cassandra:9042
         SW_APM_TEST_MEMCACHED_1_4: memcached:11211
-        SW_APM_TEST_MONGODB_2_4: mongo_2_4:27017
         SW_APM_TEST_MONGODB_2_6: mongo_2_6:27017
-        SW_APM_TEST_MONGODB_3_0: mongo_3_0:27017
+        SW_APM_TEST_MONGODB_3: mongo_3:27017
+        SW_APM_TEST_MONGODB_4: mongo_4:27017
+        SW_APM_TEST_MONGODB_5: mongo_5:27017
         SW_APM_TEST_SQLSERVER_EX: mssql:1433
         SW_APM_TEST_MYSQL: mysql:3306
         SW_APM_TEST_ORACLE: oracle:1521
@@ -58,16 +59,6 @@ jobs:
           --health-retries 5
         ports:
           - "11211:11211"
-      mongo_2_4:
-        image: mongo:2.4
-        options: >-
-          --health-cmd "mongo --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          # host:container
-          - "27016:27017"
       mongo_2_6:
         image: mongo:2.6
         options: >-
@@ -77,7 +68,7 @@ jobs:
           --health-retries 5
         ports:
           - "27017:27017"
-      mongo_3_0:
+      mongo_3:
         image: mongo:3 
         options: >-
           --health-cmd "mongo --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
@@ -87,6 +78,26 @@ jobs:
         ports:
           # host:container
           - "27018:27017"
+      mongo_4:
+        image: mongo:4 
+        options: >-
+          --health-cmd "mongo --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # host:container
+          - "27019:27017"
+      mongo_5:
+        image: mongo:5 
+        options: >-
+          --health-cmd "mongo --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # host:container
+          - "27020:27017"
       mssql:
         image: "mcr.microsoft.com/mssql/server:2017-CU8-ubuntu"
         options: >-

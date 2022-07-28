@@ -59,7 +59,7 @@ describe('probes.dns', function () {
   //
   // Define tests
   //
-  const tld = 'solarwinds.com'
+  const tld = 'example.com'
   const resolveMethods = [
     'resolve',
     'resolve6',
