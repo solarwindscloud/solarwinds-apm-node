@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const axios = require('axios')
 const http = require('http')
@@ -17,14 +17,14 @@ describe('probes.director ' + pkg.version, function () {
   // Intercept messages for analysis
   //
   before(function (done) {
-    ao.probes.fs.enabled = false
+    apm.probes.fs.enabled = false
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
 
@@ -51,7 +51,7 @@ describe('probes.director ' + pkg.version, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -120,7 +120,7 @@ describe('probes.director ' + pkg.version, function () {
   })
 
   it('should skip when disabled', function (done) {
-    ao.probes.director.enabled = false
+    apm.probes.director.enabled = false
     function hello (name) {
       this.res.writeHead(200, { 'Content-Type': 'text/plain' })
       this.res.end('Hello, ' + name + '!')
@@ -150,7 +150,7 @@ describe('probes.director ' + pkg.version, function () {
       }
     ]
     helper.doChecks(emitter, validations, function () {
-      ao.probes.director.enabled = true
+      apm.probes.director.enabled = true
       server.close(done)
     })
 

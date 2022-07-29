@@ -10,10 +10,10 @@ const should = require('should')
 const expect = require('chai').expect
 const util = require('util')
 
-const ao = require('..')
-const addon = ao.addon
-const Span = ao.Span
-const Event = ao.Event
+const apm = require('..')
+const addon = apm.addon
+const Span = apm.Span
+const Event = apm.Event
 
 const makeSettings = helper.makeSettings
 
@@ -26,11 +26,11 @@ describe('span', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     // don't count from any previous tests.
-    ao._stats.span.totalCreated = 0
-    ao._stats.span.topSpansCreated = 0
+    apm._stats.span.totalCreated = 0
+    apm._stats.span.topSpansCreated = 0
   })
   after(function (done) {
     emitter.close(done)
@@ -48,7 +48,7 @@ describe('span', function () {
   //
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -180,7 +180,7 @@ describe('span', function () {
     const outer = Span.makeEntrySpan('outer', makeSettings(), outerData)
 
     outer.run(function () {
-      inner = ao.lastSpan.descend('inner', innerData)
+      inner = apm.lastSpan.descend('inner', innerData)
       inner.run(function () {})
     })
   })
@@ -224,7 +224,7 @@ describe('span', function () {
     const outer = Span.makeEntrySpan('outer', makeSettings(), outerData)
 
     outer.run(function () {
-      inner = ao.lastSpan.descend('inner', innerData)
+      inner = apm.lastSpan.descend('inner', innerData)
       inner.run(function (wrap) {
         const delayed = wrap(function (err, res) {
           expect(err).not.exist
@@ -275,7 +275,7 @@ describe('span', function () {
         expect(res).exist
         expect(res).equal('foo')
 
-        inner = ao.lastSpan.descend('inner', innerData)
+        inner = apm.lastSpan.descend('inner', innerData)
         inner.run(function () {})
       })
 
@@ -310,7 +310,7 @@ describe('span', function () {
     const originalSendReport = Event.prototype.sendReport
     Event.prototype.sendReport = function testSendReport (...args) {
       if (!this.ignore) {
-        ao.lastEvent = this
+        apm.lastEvent = this
       }
       if (counter >= sequencing.length) {
         errors.push(util.format({ found: this, expected: 'nothing' }))
@@ -367,7 +367,7 @@ describe('span', function () {
     const getResults = setupMockEventSending(sequencing, { verbose: false })
 
     outer.run(function () {
-      inner = ao.lastSpan.descend('inner')
+      inner = apm.lastSpan.descend('inner')
       inner.run(function () {})
     })
 
@@ -403,7 +403,7 @@ describe('span', function () {
 
       // our async span invokes a synchronous span
       process.nextTick(function () {
-        const inner = ao.lastSpan.descend('inner')
+        const inner = apm.lastSpan.descend('inner')
         inner.run(() => {})
         cb(null, 'foo')
       })
@@ -430,7 +430,7 @@ describe('span', function () {
     const outer = Span.makeEntrySpan(name, settings)
 
     outer.run(function () {
-      inner = ao.lastSpan.descend('inner')
+      inner = apm.lastSpan.descend('inner')
       inner.run(function () {})
     })
 
@@ -459,7 +459,7 @@ describe('span', function () {
     const outer = Span.makeEntrySpan(name, settings)
 
     outer.run(function () {
-      inner = ao.lastSpan.descend('inner')
+      inner = apm.lastSpan.descend('inner')
       inner.run(function (wrap) {
         const delayed = wrap(function (err, res) {
           expect(err).not.exist
@@ -501,7 +501,7 @@ describe('span', function () {
         expect(err).not.exist
         expect(res).equal('foo')
 
-        inner = ao.lastSpan.descend('inner')
+        inner = apm.lastSpan.descend('inner')
         inner.run(function () {})
 
         const { sendReportCalls, sendCalls, errors } = getResults()
@@ -544,7 +544,7 @@ describe('span', function () {
       if (depth > maxDepth) {
         return
       }
-      const span = ao.lastSpan.descend(`inner-${depth}`)
+      const span = apm.lastSpan.descend(`inner-${depth}`)
       span.run(digDeeper)
     }
 
@@ -597,7 +597,7 @@ describe('span', function () {
           return
         }
 
-        const span = ao.lastSpan.descend(`inner-${depth}`)
+        const span = apm.lastSpan.descend(`inner-${depth}`)
         span.run(asyncDigDeeper)
       })
 
@@ -659,7 +659,7 @@ describe('span', function () {
 
       // if more depth allowed descend another level.
       if (depth <= maxDepth) {
-        const span = ao.lastSpan.descend(`inner-${depth}`)
+        const span = apm.lastSpan.descend(`inner-${depth}`)
         alternatingRunner(span)
       }
 
@@ -692,7 +692,7 @@ describe('span', function () {
           return
         }
 
-        const span = ao.lastSpan.descend(`inner-${depth}`)
+        const span = apm.lastSpan.descend(`inner-${depth}`)
         alternatingRunner(span)
       })
 
@@ -705,7 +705,7 @@ describe('span', function () {
     const outer = Span.makeEntrySpan(name, settings)
 
     outer.run(function (wrapper) {
-      const span = ao.lastSpan.descend(`inner-${depth}`)
+      const span = apm.lastSpan.descend(`inner-${depth}`)
       span.run(asyncDigDeeper)
       const outerAsyncWrapped = wrapper(function (err, res) {
         expect(err).not.exist
@@ -982,10 +982,10 @@ describe('span', function () {
       sub.run(function (wrap) {
         const cb = wrap(function () {})
         setImmediate(function () {
-          ao.reportInfo(after)
+          apm.reportInfo(after)
           cb()
         })
-        ao.reportInfo(before)
+        apm.reportInfo(before)
       })
       span.info(after)
     })
@@ -1048,16 +1048,16 @@ describe('span', function () {
 
     helper.doChecks(emitter, checks, done)
 
-    ao.requestStore.run(function () {
+    apm.requestStore.run(function () {
       span.enter()
       const sub1 = span.descend('inner-1')
       sub1.run(function () { // inner 1 entry
-        ao.reportInfo(before) // info
+        apm.reportInfo(before) // info
 
         const sub2 = span.descend('inner-3')
         sub2.run(function (wrap) { // inner 3 entry
           timeout(wrap(function () {
-            ao.reportError(error) // deferred error
+            apm.reportError(error) // deferred error
 
             const sub2 = span.descend('inner-4')
             sub2.run(function (wrap) { // inner 4 entry
@@ -1066,7 +1066,7 @@ describe('span', function () {
           }))
         })
 
-        ao.reportInfo(after)
+        apm.reportInfo(after)
       })
 
       const sub2 = span.descend('inner-2')
@@ -1079,7 +1079,7 @@ describe('span', function () {
   })
 
   it('should generate the expected stats', function () {
-    const stats = ao._stats.span
+    const stats = apm._stats.span
     expect(stats.topSpansActive).equal(0, 'no topSpans should be active')
     expect(stats.otherSpansActive).equal(0, 'no spans should be active')
     expect(stats.totalCreated).equal(46, 'total spans created should be correct')

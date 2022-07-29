@@ -1,7 +1,7 @@
 /* global it, describe */
 'use strict'
 
-const {ao} = require('../1.test-common.js'); // eslint-disable-line
+require('../1.test-common.js')
 const expect = require('chai').expect
 
 const aws = require('aws-sdk')

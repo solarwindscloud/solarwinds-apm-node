@@ -2,7 +2,7 @@
 'use strict'
 
 const expect = require('chai').expect
-const { ao } = require('../1.test-common.js')
+const { apm } = require('../1.test-common.js')
 const helper = require('../helper')
 const semver = require('semver')
 
@@ -42,7 +42,7 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
   let fsenabled
 
   before(function () {
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
   after(function () {
   })
@@ -52,29 +52,29 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     // make them more readable
-    backtraces = ao.probes[moduleName].collectBacktraces
-    ao.probes[moduleName].collectBacktraces = false
+    backtraces = apm.probes[moduleName].collectBacktraces
+    apm.probes[moduleName].collectBacktraces = false
     // and don't let file IO complicate the results
-    fsenabled = ao.probes.fs.enabled
-    ao.probes.fs.enabled = false
-    ao.probes.dns.enabled = false
+    fsenabled = apm.probes.fs.enabled
+    apm.probes.fs.enabled = false
+    apm.probes.dns.enabled = false
   })
   after(function (done) {
-    ao.probes.fs.enabled = fsenabled
-    ao.probes[moduleName].collectBacktraces = backtraces
+    apm.probes.fs.enabled = fsenabled
+    apm.probes[moduleName].collectBacktraces = backtraces
     emitter.close(done)
   })
 
   beforeEach(function () {
     if (this.currentTest.title.indexOf('should connect and queue queries using a') === 0) {
-      // ao.logLevelAdd('test:messages')
+      // apm.logLevelAdd('test:messages')
     }
   })
   afterEach(function () {
-    // ao.logLevelRemove('test:messages')
+    // apm.logLevelRemove('test:messages')
   })
 
   //
@@ -104,7 +104,7 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
   // fake test to work around UDP dropped message issue
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -308,7 +308,7 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
 
       mongoose.connect(`mongodb://${host}/${dbn}`, mongoOpts)
         .then(r => {
-          ao.loggers.test.debug('addQueue - connected')
+          apm.loggers.test.debug('addQueue - connected')
         })
 
       function makeInsertEntry (cat) {
@@ -381,17 +381,17 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
         }
       }
 
-      ao.g.stop = true
+      apm.g.stop = true
 
       helper.test(
         helper.setAggregate(emitter, aggregateSettings),
         function (done) {
           let n = 0
           function three () {
-            ao.loggers.test.debug('addQueue - three() %d', n + 1)
+            apm.loggers.test.debug('addQueue - three() %d', n + 1)
             if (++n >= 3) {
               mongoose.disconnect().then(r => {
-                ao.loggers.test.debug('disconnected')
+                apm.loggers.test.debug('disconnected')
                 done()
               })
             }
@@ -406,7 +406,7 @@ describe(`probes/mongoose ${pkg.version} using ${moduleName}`, function () {
         steps,
         function testDone (err, config) {
           if (!err) {
-            if (ao.loggers.test.debug.enabled) {
+            if (apm.loggers.test.debug.enabled) {
               config.messages.forEach(showMessage)
             }
             checkMessages(steps, config)

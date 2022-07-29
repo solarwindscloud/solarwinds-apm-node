@@ -7,7 +7,7 @@ const path = require('path')
 const helloDotEjs = 'hello.ejs'
 
 const helper = require(path.join(base, 'test/helper'))
-const ao = global[Symbol.for('SolarWinds.Apm.Once')]
+const apm = global[Symbol.for('SolarWinds.Apm.Once')]
 
 const axios = require('axios')
 
@@ -31,14 +31,14 @@ describe(`probes.${visionName} ${pkg.version} ${hapiText}`, function () {
   // Intercept messages for analysis
   //
   before(function (done) {
-    ao.probes.fs.enabled = false
+    apm.probes.fs.enabled = false
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
 
@@ -213,7 +213,7 @@ describe(`probes.${visionName} ${pkg.version} ${hapiText}`, function () {
   }
 
   async function disabledTest () {
-    ao.probes['@hapi/vision'].enabled = false
+    apm.probes['@hapi/vision'].enabled = false
     const server = await makeViewServer()
 
     server.route({
@@ -244,7 +244,7 @@ describe(`probes.${visionName} ${pkg.version} ${hapiText}`, function () {
       }
     ]
     helper.doChecks(emitter, validations, function () {
-      ao.probes['@hapi/vision'].enabled = true
+      apm.probes['@hapi/vision'].enabled = true
       server.listener.close(_resolve)
     })
 
@@ -259,7 +259,7 @@ describe(`probes.${visionName} ${pkg.version} ${hapiText}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {

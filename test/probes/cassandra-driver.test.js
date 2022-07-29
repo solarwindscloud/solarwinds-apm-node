@@ -2,17 +2,17 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao, startTest, endTest } = require('../1.test-common')
+const { apm, startTest, endTest } = require('../1.test-common')
 
 const noop = helper.noop
-const conf = ao.probes['cassandra-driver']
+const conf = apm.probes['cassandra-driver']
 
 const should = require('should') // eslint-disable-line no-unused-vars
 const hosts = helper.Address.from(
   process.env.SW_APM_TEST_CASSANDRA_2_2 || 'cassandra:9042'
 )
 
-const ks = 'test' + (process.env.AO_IX || '')
+const ks = 'test' + (process.env.apm_IX || '')
 
 if (helper.skipTest(module.filename)) {
   process.exit()
@@ -24,7 +24,7 @@ const pkg = require('cassandra-driver/package')
 
 describe('probes.cassandra-driver ' + pkg.version, function () {
   this.timeout(10000)
-  const ctx = { ao }
+  const ctx = { apm }
   let emitter
   let client
   let prevDebug
@@ -61,9 +61,9 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
@@ -116,20 +116,20 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
   })
 
   beforeEach(function () {
-    prevDebug = ao.logLevel
+    prevDebug = apm.logLevel
     if (this.currentTest.title === 'should trace a prepared query') {
-      // ao.logLevel += ',test:messages'
+      // apm.logLevel += ',test:messages'
     }
   })
 
   afterEach(function () {
-    ao.logLevel = prevDebug
+    apm.logLevel = prevDebug
   })
 
   // test to work around UDP dropped message issue
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', noop)
+      apm.instrument('fake', noop)
       done()
     }, [
       function (msg) {
@@ -146,7 +146,7 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
   })
 
   it('should be configured to not tag SQL by default', function () {
-    ao.probes.mysql.should.have.property('tagSql', false)
+    apm.probes.mysql.should.have.property('tagSql', false)
   })
 
   it('should trace a basic query', test_basic)
@@ -201,7 +201,7 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
 
   function test_sanitize (done) {
     helper.test(emitter, function (done) {
-      const conf = ctx.ao.probes['cassandra-driver']
+      const conf = ctx.apm.probes['cassandra-driver']
       conf.sanitizeSql = true
       ctx.cassandra.execute("SELECT * from foo where bar='1'", function (err) {
         conf.sanitizeSql = false
@@ -317,7 +317,7 @@ describe('probes.cassandra-driver ' + pkg.version, function () {
   }
 
   function test_tag (done) {
-    ao.probes['cassandra-driver'].tagSql = true
+    apm.probes['cassandra-driver'].tagSql = true
 
     helper.test(emitter, function (done) {
       ctx.cassandra.execute('SELECT now() FROM system.local', done)

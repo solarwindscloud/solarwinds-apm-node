@@ -2,8 +2,8 @@
 'use strict'
 
 const helper = require('../helper')
-const ao = helper.ao
-const addon = ao.addon
+const apm = helper.apm
+const addon = apm.addon
 
 const axios = require('axios')
 const http = require('http')
@@ -19,8 +19,8 @@ describe('composite.axios', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
     emitter.close(done)
@@ -76,13 +76,13 @@ describe('composite.axios', function () {
   // server
   //
   describe('http-server', function () {
-    const conf = ao.probes.http
+    const conf = apm.probes.http
 
     // it's possible for a local UDP send to fail but oboe doesn't report
     // it, so compensate for it.
     it('UDP might lose a message running locally', function (done) {
       helper.test(emitter, function (done) {
-        ao.instrument('fake', function () { })
+        apm.instrument('fake', function () { })
         done()
       }, [
         function (msg) {
@@ -133,7 +133,7 @@ describe('composite.axios', function () {
         res.end('done')
       })
 
-      const origin = new ao.Event('span-name', 'label-name', addon.Event.makeRandom(1))
+      const origin = new apm.Event('span-name', 'label-name', addon.Event.makeRandom(1))
 
       helper.doChecks(emitter, [
         function (msg) {
@@ -168,7 +168,7 @@ describe('composite.axios', function () {
         res.end('done')
       })
 
-      const origin = new ao.Event('span-name', 'label-name', addon.Event.makeRandom(1))
+      const origin = new apm.Event('span-name', 'label-name', addon.Event.makeRandom(1))
       const traceparent = origin.toString().slice(0, 42) + '0'.repeat(16) + '01'
 
       const logChecks = [
@@ -269,7 +269,7 @@ describe('composite.axios', function () {
     // Verify query param filtering support
     //
     it('should support query param filtering', function (done) {
-      ao.probes['http-client'].enabled = false
+      apm.probes['http-client'].enabled = false
       conf.includeRemoteUrlParams = false
       const server = http.createServer(function (req, res) {
         res.end('done')
@@ -285,7 +285,7 @@ describe('composite.axios', function () {
         }
       ], function (err) {
         conf.includeRemoteUrlParams = true
-        ao.probes['http-client'].enabled = true
+        apm.probes['http-client'].enabled = true
         server.close(done.bind(null, err))
       })
 
@@ -466,7 +466,7 @@ describe('composite.axios', function () {
   // client
   //
   describe('http-client', function () {
-    const conf = ao.probes['http-client']
+    const conf = apm.probes['http-client']
 
     it('should trace http.get', function (done) {
       const server = http.createServer(function (req, res) {
@@ -503,13 +503,13 @@ describe('composite.axios', function () {
         axios.get('http://www.google.com')
           .then(response => {
             if (response.status !== 200) {
-              ao.loggers.error('status', response.status)
+              apm.loggers.error('status', response.status)
             }
             res.end('done')
             server.close()
           })
           .catch(err => {
-            ao.loggers.error('error', err)
+            apm.loggers.error('error', err)
             res.statusCode = 422
             res.end({ geterror: err.toString() })
             server.close()
@@ -565,13 +565,13 @@ describe('composite.axios', function () {
         axios.get(url2)
           .then(response => {
             if (response.status !== 200) {
-              ao.loggers.error('status', response.status)
+              apm.loggers.error('status', response.status)
             }
             res.end('done')
             server.close()
           })
           .catch(err => {
-            ao.loggers.error('error', err)
+            apm.loggers.error('error', err)
             res.statusCode = 422
             res.end({ geterror: err.toString() })
             server.close()
@@ -640,13 +640,13 @@ describe('composite.axios', function () {
         axios(options)
           .then(function (response) {
             if (response.status !== 200) {
-              ao.loggers.error('status', response.status)
+              apm.loggers.error('status', response.status)
             }
             res.end('done')
             server.close()
           })
           .catch(function (err) {
-            ao.loggers.error('error', err)
+            apm.loggers.error('error', err)
             res.statusCode = 422
             res.end({ geterror: err.toString() })
             server.close()

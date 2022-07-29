@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../../helper')
-const ao = helper.ao
+const apm = helper.apm
 const fs = require('fs')
 const should = require('should')
 
@@ -36,12 +36,12 @@ module.exports = function (Promise) {
 
   it('should support promises via delay', function (done) {
     const t = indirectDone(done)
-    ao.requestStore.run(function () {
-      ao.requestStore.set('foo', 'bar')
+    apm.requestStore.run(function () {
+      apm.requestStore.set('foo', 'bar')
       delay(100).then(function () {
         return delay(100)
       }).then(function () {
-        ao.requestStore.get('foo').should.equal('bar')
+        apm.requestStore.get('foo').should.equal('bar')
         t.done()
       }).catch(e => {
         // this shouldn't happen so check that it doesn't.
@@ -53,8 +53,8 @@ module.exports = function (Promise) {
 
   it('should support promises via fs.readFile', function (done) {
     const t = indirectDone(done)
-    ao.requestStore.run(function () {
-      ao.requestStore.set('foo', 'bar')
+    apm.requestStore.run(function () {
+      apm.requestStore.set('foo', 'bar')
       const p = new Promise(function (resolve, reject) {
         fs.readFile('./package.json', 'utf8', function (err, data) {
           if (err) {
@@ -65,7 +65,7 @@ module.exports = function (Promise) {
         })
       })
       p.then(function () {
-        ao.requestStore.get('foo').should.equal('bar')
+        apm.requestStore.get('foo').should.equal('bar')
         t.done()
       }).catch(e => {
         should.notExist(e)
@@ -78,10 +78,10 @@ module.exports = function (Promise) {
     const d = domain.create()
     d.on('error', done)
     d.run(function () {
-      ao.requestStore.run(function () {
-        ao.requestStore.set('foo', 'bar')
+      apm.requestStore.run(function () {
+        apm.requestStore.set('foo', 'bar')
         delay(100).then(function () {
-          const foo = ao.requestStore.get('foo')
+          const foo = apm.requestStore.get('foo')
           should.exist(foo)
           foo.should.equal('bar')
           t.done()
@@ -99,8 +99,8 @@ module.exports = function (Promise) {
 
   it('should support progress callbacks', function (done) {
     const t = indirectDone(done)
-    ao.requestStore.run(function () {
-      ao.requestStore.set('foo', 'bar')
+    apm.requestStore.run(function () {
+      apm.requestStore.set('foo', 'bar')
       delay(100).then(function () {
         t.done()
       }, done, function () {})

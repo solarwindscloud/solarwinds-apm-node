@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const postgres = require('pg')
 const pkg = require('pg/package.json')
@@ -30,38 +30,38 @@ try {
   nativeVer = require('pg-native/package').version
   hasNative = true
 } catch (e) {
-  ao.loggers.test.info('test/probes/pg failed to load pg native')
+  apm.loggers.test.info('test/probes/pg failed to load pg native')
   hasNative = false
 }
 
 describe(`probes.pg ${pkg.version} pg-native ${nativeVer}`, function () {
   let emitter
-  const ctx = { ao, tName, addr }
+  const ctx = { apm, tName, addr }
 
   // note: perform this test before setting test context since we flip the setting from default to false.
   it('should be configured to sanitize SQL by default', function () {
-    ao.probes.pg.should.have.property('sanitizeSql', true)
-    ao.probes.pg.sanitizeSql = false
+    apm.probes.pg.should.have.property('sanitizeSql', true)
+    apm.probes.pg.sanitizeSql = false
   })
 
   it('should be configured to not tag SQL by default', function () {
-    ao.probes.pg.should.have.property('tagSql', false)
+    apm.probes.pg.should.have.property('tagSql', false)
   })
 
   //
   // Intercept messages for analysis
   //
   before(function (done) {
-    if (ao.lastEvent) {
-      const c = ao.requestStore.active ? ao.requestStore.active.id : null
-      ao.loggers.debug(`id ${c} event.last at startup %e`, ao.lastEvent)
+    if (apm.lastEvent) {
+      const c = apm.requestStore.active ? apm.requestStore.active.id : null
+      apm.loggers.debug(`id ${c} event.last at startup %e`, apm.lastEvent)
     }
 
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.probes.fs.enabled = false
-    ao.probes.dns.enabled = false
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.probes.fs.enabled = false
+    apm.probes.dns.enabled = false
   })
   after(function (done) {
     emitter.close(done)
@@ -71,17 +71,17 @@ describe(`probes.pg ${pkg.version} pg-native ${nativeVer}`, function () {
   // basic test setup and teardown
   //
   before(function () {
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
   after(function () {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
   })
 
   //
   // remove any leftover context
   //
   after(function () {
-    ao.resetRequestStore()
+    apm.resetRequestStore()
   })
 
   //
@@ -115,7 +115,7 @@ describe(`probes.pg ${pkg.version} pg-native ${nativeVer}`, function () {
   //
   // Test against both native and js postgres drivers
   //
-  const subtests = require('./pg/subtests')(ao, ctx)
+  const subtests = require('./pg/subtests')(apm, ctx)
 
   Object.keys(drivers).forEach(function (type) {
     const driver = drivers[type]
@@ -154,7 +154,7 @@ describe(`probes.pg ${pkg.version} pg-native ${nativeVer}`, function () {
       // test to work around UDP dropped message issue
       it('UDP might lose a message', function (done) {
         helper.test(emitter, function (done) {
-          ao.instrument('fake', function () {})
+          apm.instrument('fake', function () {})
           done()
         }, [
           function (msg) {

@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const semver = require('semver')
 
@@ -21,13 +21,13 @@ describe('probes.raw-body ' + pkg.version, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.probes.fs.enabled = false
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.probes.fs.enabled = false
+    apm.g.testing(__filename)
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
 
@@ -54,7 +54,7 @@ describe('probes.raw-body ' + pkg.version, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {

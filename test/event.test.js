@@ -2,9 +2,9 @@
 'use strict'
 
 const helper = require('./helper')
-const ao = helper.ao
-const aob = ao.addon
-const Event = ao.Event
+const apm = helper.apm
+const apmb = apm.addon
+const Event = apm.Event
 
 const expect = require('chai').expect
 
@@ -21,15 +21,15 @@ describe('event', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = aob.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apmb.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
     emitter.close(done)
   })
 
   beforeEach(function () {
-    ev0 = aob.Event.makeRandom(1)
+    ev0 = apmb.Event.makeRandom(1)
     const mds = ev0.toString().split('-')
     mdTaskId = mds[1]
     mdOpId = mds[2]
@@ -37,13 +37,13 @@ describe('event', function () {
 
   afterEach(function () {
     if (this.currentTest.title === 'UDP might lose a message') {
-      baseStats = Object.assign({}, ao._stats.event)
+      baseStats = Object.assign({}, apm._stats.event)
     }
   })
 
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -74,20 +74,20 @@ describe('event', function () {
 
   // net 4
   it('should fetch an event\'s sample flag', function () {
-    ao.sampleRate = 0
-    ao.traceMode = 'never'
-    ev0 = aob.Event.makeRandom(0)
+    apm.sampleRate = 0
+    apm.traceMode = 'never'
+    ev0 = apmb.Event.makeRandom(0)
     event = new Event('test', 'entry', ev0)
-    expect(ao.sampling(event)).equal(false)
-    expect(ao.sampling(event.toString())).equal(false)
+    expect(apm.sampling(event)).equal(false)
+    expect(apm.sampling(event.toString())).equal(false)
 
-    ao.sampleRate = aob.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ev0 = aob.Event.makeRandom(1)
+    apm.sampleRate = apmb.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    ev0 = apmb.Event.makeRandom(1)
     event = new Event('test', 'entry', ev0)
 
-    expect(ao.sampling(event)).equal(true)
-    expect(ao.sampling(event.toString())).equal(true)
+    expect(apm.sampling(event)).equal(true)
+    expect(apm.sampling(event.toString())).equal(true)
   })
 
   // net 4, sent 1
@@ -105,7 +105,7 @@ describe('event', function () {
     })
 
     // NOTE: events must be sent within a request store context
-    ao.requestStore.run(function () {
+    apm.requestStore.run(function () {
       event2.sendReport()
     })
   })
@@ -141,14 +141,14 @@ describe('event', function () {
       expect(msg).property('Foo', 'fubar')
       done()
     })
-    ao.requestStore.run(function () {
+    apm.requestStore.run(function () {
       event.sendReport({ Foo: 'fubar' })
     })
   })
 
   it('should generate the expected stats', function () {
     // this suite creates 8 events and sends 2 after the UDP test
-    const stats = ao._stats.event
+    const stats = apm._stats.event
     expect(stats.created).equal(baseStats.created + 8, 'events created')
     expect(stats.active).equal(baseStats.active + 6, 'events active')
   })

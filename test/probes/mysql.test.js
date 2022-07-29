@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common.js')
+const { apm } = require('../1.test-common.js')
 
 const mysql = require('mysql')
 const pkg = require('mysql/package.json')
@@ -32,7 +32,7 @@ describe(`probes.mysql ${pkg.version}`, function () {
     setTimeout(function () {
       done()
     }, 100)
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
 
   //
@@ -40,25 +40,25 @@ describe(`probes.mysql ${pkg.version}`, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.probes.fs.enabled = false
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.probes.fs.enabled = false
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
 
   let prevll
   beforeEach(function () {
     if (this.currentTest.title === 'should trace a streaming query') {
-      prevll = ao.logLevel
+      prevll = apm.logLevel
     }
   })
 
   afterEach(function () {
     if (this.currentTest.title === 'should trace a streaming query') {
-      ao.logLevel = prevll
+      apm.logLevel = prevll
     }
   })
 
@@ -104,7 +104,7 @@ describe(`probes.mysql ${pkg.version}`, function () {
 
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', helper.noop)
+      apm.instrument('fake', helper.noop)
       done()
     }, [
       function (msg) {
@@ -127,7 +127,7 @@ describe(`probes.mysql ${pkg.version}`, function () {
       // db.query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = \'test\';', function (err, data) {
       db.query('show databases like \'test\';', function (err, data) {
         if (err) {
-          ao.loggers.debug(err)
+          apm.loggers.debug(err)
           return done(err)
         }
         if (data.length) {
@@ -187,13 +187,13 @@ describe(`probes.mysql ${pkg.version}`, function () {
   })
 
   it('should be configured to sanitize SQL by default', function () {
-    ao.probes.mysql.should.have.property('sanitizeSql', true)
+    apm.probes.mysql.should.have.property('sanitizeSql', true)
     // turn off for testing
-    ao.probes.mysql.sanitizeSql = false
+    apm.probes.mysql.sanitizeSql = false
   })
 
   it('should be configured to not tag SQL by default', function () {
-    ao.probes.mysql.should.have.property('tagSql', false)
+    apm.probes.mysql.should.have.property('tagSql', false)
   })
 
   it('should trace a basic query', test_basic)
@@ -329,7 +329,7 @@ describe(`probes.mysql ${pkg.version}`, function () {
 
   function test_sanitize (done) {
     helper.test(emitter, function (done) {
-      ao.probes.mysql.sanitizeSql = true
+      apm.probes.mysql.sanitizeSql = true
       const query = `SELECT * FROM ${ctx.t} WHERE "foo" = ` + mysql.escape('bar')
       ctx.mysql.query(query, done)
     }, [
@@ -341,7 +341,7 @@ describe(`probes.mysql ${pkg.version}`, function () {
         checks.exit(msg)
       }
     ], () => {
-      ao.probes.mysql.sanitizeSql = false
+      apm.probes.mysql.sanitizeSql = false
       done()
     })
   }
@@ -368,7 +368,7 @@ describe(`probes.mysql ${pkg.version}`, function () {
   }
 
   function test_tag (done) {
-    ao.probes.mysql.tagSql = true
+    apm.probes.mysql.tagSql = true
     helper.test(emitter, function (done) {
       const query = 'SELECT 1'
       ctx.mysql.query(query, done)
@@ -382,18 +382,18 @@ describe(`probes.mysql ${pkg.version}`, function () {
         checks.exit(msg)
       }
     ], () => {
-      ao.probes.mysql.tagSql = false
+      apm.probes.mysql.tagSql = false
       done()
     })
   }
 
   function test_disabled (done) {
-    ao.probes.mysql.enabled = false
+    apm.probes.mysql.enabled = false
     helper.test(emitter, function (done) {
       const query = 'SELECT 1'
       ctx.mysql.query(query, done)
     }, [], function (err) {
-      ao.probes.mysql.enabled = true
+      apm.probes.mysql.enabled = true
       done(err)
     })
   }

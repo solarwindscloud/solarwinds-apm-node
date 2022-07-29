@@ -8,7 +8,6 @@ const expect = require('chai').expect
 const relativeDir = '..'
 const guc = require(`${relativeDir}/lib/get-unified-config`)
 
-console.log(guc)
 //
 // expected results when neither a config file nor environment variables are present.
 //

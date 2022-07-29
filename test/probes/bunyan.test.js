@@ -1,8 +1,8 @@
 /* global it, describe, before, beforeEach, afterEach */
 'use strict'
 
-const ao = require('../..')
-const aob = ao.addon
+const apm = require('../..')
+const apmb = apm.addon
 
 const helper = require('../helper')
 const expect = require('chai').expect
@@ -79,7 +79,7 @@ function makePost (obj) {
   return Object.assign({}, template2, obj)
 }
 
-// if no traceId is passed then don't expect {ao: {traceId}}
+// if no traceId is passed then don't expect {apm: {traceId}}
 function checkEventInfo (eventInfo, level, message, traceId) {
   // check time first because it's not a straight compare
   expect(eventInfo.time.valueOf()).within(Date.now() - 150, Date.now() + 100)
@@ -135,8 +135,8 @@ describe(`bunyan v${version}`, function () {
   let eventInfo
 
   before(function () {
-    ao.cfg.insertTraceIdsIntoLogs = true
-    ao.probes.fs.enabled = false
+    apm.cfg.insertTraceIdsIntoLogs = true
+    apm.probes.fs.enabled = false
   })
 
   before(function () {
@@ -180,11 +180,11 @@ describe(`bunyan v${version}`, function () {
   //
   beforeEach(function (done) {
     // make sure we get sampled traces
-    ao.sampleRate = aob.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apmb.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     // default to the simple 'true'
-    ao.cfg.insertTraceIdsIntoLogs = true
-    ao.probes.fs.enabled = false
+    apm.cfg.insertTraceIdsIntoLogs = true
+    apm.probes.fs.enabled = false
 
     emitter = helper.backend(done)
   })
@@ -196,7 +196,7 @@ describe(`bunyan v${version}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -216,7 +216,7 @@ describe(`bunyan v${version}`, function () {
       let traceId
 
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
 
       function localDone () {
         // if not trace
@@ -225,8 +225,8 @@ describe(`bunyan v${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           // log
           logger.info(message)
         })
@@ -253,12 +253,12 @@ describe(`bunyan v${version}`, function () {
       let traceId
 
       // reset in beforeEach() so set in each test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
-      ao.traceMode = 0
-      ao.sampleRate = 0
+      apm.cfg.insertTraceIdsIntoLogs = mode
+      apm.traceMode = 0
+      apm.sampleRate = 0
 
       function test () {
-        traceId = ao.lastEvent.toString()
+        traceId = apm.lastEvent.toString()
         expect(traceId[traceId.length - 1] === '0', 'traceId should be unsampled')
         // log
         logger.info(message)
@@ -266,8 +266,8 @@ describe(`bunyan v${version}`, function () {
         return 'test-done'
       }
 
-      const traceparent = aob.Event.makeRandom(0).toString()
-      const result = ao.startOrContinueTrace(traceparent, '', spanName, test)
+      const traceparent = apmb.Event.makeRandom(0).toString()
+      const result = apm.startOrContinueTrace(traceparent, '', spanName, test)
 
       expect(result).equal('test-done')
       checkEventInfo(eventInfo, level, message, maybe ? undefined : traceId)
@@ -278,7 +278,7 @@ describe(`bunyan v${version}`, function () {
     const level = 'info'
     const message = 'always insert'
 
-    ao.cfg.insertTraceIdsIntoLogs = 'always'
+    apm.cfg.insertTraceIdsIntoLogs = 'always'
 
     logger.info(message)
 
@@ -296,7 +296,7 @@ describe(`bunyan v${version}`, function () {
     }
 
     function asyncFunction (cb) {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       logger.error(message)
       setTimeout(function () {
         cb()
@@ -304,7 +304,7 @@ describe(`bunyan v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, asyncFunction, done)
+      apm.instrument(spanName, asyncFunction, done)
     }, [
       function (msg) {
         msg.should.have.property('Layer', spanName)
@@ -329,7 +329,7 @@ describe(`bunyan v${version}`, function () {
     }
 
     function promiseFunction () {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       logger[level](message)
       return new Promise((resolve, reject) => {
         setTimeout(function () {
@@ -341,7 +341,7 @@ describe(`bunyan v${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(spanName, promiseFunction).then(r => {
+        apm.pInstrument(spanName, promiseFunction).then(r => {
           expect(r).equal(result)
           done()
         })
@@ -359,8 +359,8 @@ describe(`bunyan v${version}`, function () {
 
   it('should insert trace IDs using the function directly', function (done) {
     const level = 'info'
-    ao.cfg.insertTraceIdsIntoLogs = false
-    const message = 'helper and synchronous ao.traceId=%s'
+    apm.cfg.insertTraceIdsIntoLogs = false
+    const message = 'helper and synchronous apm.traceId=%s'
     let traceId
 
     function localDone () {
@@ -372,8 +372,8 @@ describe(`bunyan v${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           logger[level](message, traceId)
         })
         done()

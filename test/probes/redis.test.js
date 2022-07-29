@@ -3,10 +3,10 @@
 
 const helper = require('../helper')
 const Address = helper.Address
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const noop = helper.noop
-const addon = ao.addon
+const addon = apm.addon
 
 const redis = require('redis')
 const pkg = require('redis/package')
@@ -26,10 +26,10 @@ describe('probes.redis ' + pkg.version, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
 
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
@@ -49,7 +49,7 @@ describe('probes.redis ' + pkg.version, function () {
 
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', noop)
+      apm.instrument('fake', noop)
       done()
     }, [
       function (msg) {

@@ -1,7 +1,7 @@
 'use strict'
 
 const expect = require('chai').expect
-const ao = require('..')
+const apm = require('..')
 
 const gc = global.gc || (() => true)
 
@@ -22,7 +22,7 @@ async function t1 (main) {
 
   let p
   // promiseStartOrContinueTrace. psoon's ...args are used to resolve the promise.
-  const res = ao.pStartOrContinueTrace(
+  const res = apm.pStartOrContinueTrace(
     null,
     main, // span name
     // promise-returning runner
@@ -66,17 +66,17 @@ let doneFlag = false
 
 async function noop () {
   if (noopsCollect) gc()
-  return ['noop', `test-${ix}`, [...ao.requestStore._contexts.keys()]]
+  return ['noop', `test-${ix}`, [...apm.requestStore._contexts.keys()]]
 }
 async function done () {
   doneFlag = true
-  return ['set doneFlag', `test-${ix}`, [...ao.requestStore._contexts.keys()]]
+  return ['set doneFlag', `test-${ix}`, [...apm.requestStore._contexts.keys()]]
 }
 
-output('start', [...ao.requestStore._contexts.keys()])
+output('start', [...apm.requestStore._contexts.keys()])
 
 const i0 = setInterval(function () {
-  output('separate', ao.lastEvent)
+  output('separate', apm.lastEvent)
   if (doneFlag) clearInterval(i0)
 }, 1000)
 
@@ -88,7 +88,7 @@ const interval = setInterval(function () {
         ix += 1
       })
   } else {
-    output('clearing interval 1', [...ao.requestStore._contexts.keys()])
+    output('clearing interval 1', [...apm.requestStore._contexts.keys()])
     clearInterval(interval)
   }
 }, 1000)
@@ -102,9 +102,9 @@ const i2 = setInterval(function () {
   if (++counter > 3) {
     output('clearing interval 2')
     clearInterval(i2)
-    expect(ao.lastEvent).equal(undefined)
-    expect([...ao.requestStore._contexts.keys()]).property('length', 0)
+    expect(apm.lastEvent).equal(undefined)
+    expect([...apm.requestStore._contexts.keys()]).property('length', 0)
   }
-  output('countdown', ao.lastEvent, [...ao.requestStore._contexts.keys()])
+  output('countdown', apm.lastEvent, [...apm.requestStore._contexts.keys()])
   gc()
 }, 3000)

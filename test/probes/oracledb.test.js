@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const oracledb = require('oracledb')
 const pkg = require('oracledb/package.json')
@@ -26,10 +26,10 @@ describe(`probes.oracledb ${pkg.version}`, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
 
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
@@ -44,7 +44,7 @@ describe(`probes.oracledb ${pkg.version}`, function () {
 
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -55,12 +55,12 @@ describe(`probes.oracledb ${pkg.version}`, function () {
   })
 
   it('should be configured to sanitize SQL by default', function () {
-    ao.probes.oracledb.should.have.property('sanitizeSql', true)
-    ao.probes.oracledb.sanitizeSql = false
+    apm.probes.oracledb.should.have.property('sanitizeSql', true)
+    apm.probes.oracledb.sanitizeSql = false
   })
 
   it('should be configured to not tag SQL by default', function () {
-    ao.probes.oracledb.should.have.property('tagSql', false)
+    apm.probes.oracledb.should.have.property('tagSql', false)
   })
 
   const checks = {
@@ -111,7 +111,7 @@ describe(`probes.oracledb ${pkg.version}`, function () {
   function test_sanitization (done) {
     helper.test(emitter, function (done) {
       oracledb.isAutoCommit = false
-      ao.probes.oracledb.sanitizeSql = true
+      apm.probes.oracledb.sanitizeSql = true
 
       function query (err, connection) {
         if (err) {
@@ -131,7 +131,7 @@ describe(`probes.oracledb ${pkg.version}`, function () {
         checks['oracle-exit'](msg)
       }
     ], () => {
-      ao.probes.oracledb.sanitizeSql = false
+      apm.probes.oracledb.sanitizeSql = false
       done()
     })
   }
@@ -165,7 +165,7 @@ describe(`probes.oracledb ${pkg.version}`, function () {
   }
 
   function test_tag (done) {
-    ao.probes.oracledb.tagSql = true
+    apm.probes.oracledb.tagSql = true
     helper.test(emitter, function (done) {
       oracledb.isAutoCommit = false
       function query (err, connection) {
@@ -186,7 +186,7 @@ describe(`probes.oracledb ${pkg.version}`, function () {
         checks['oracle-exit'](msg)
       }
     ], () => {
-      ao.probes.oracledb.tagSql = false
+      apm.probes.oracledb.tagSql = false
       done()
     })
   }
@@ -280,7 +280,7 @@ describe(`probes.oracledb ${pkg.version}`, function () {
   }
 
   function test_disabled (done) {
-    ao.probes.oracledb.enabled = false
+    apm.probes.oracledb.enabled = false
 
     helper.test(emitter, function (done) {
       oracledb.isAutoCommit = false

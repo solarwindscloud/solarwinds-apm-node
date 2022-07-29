@@ -1,7 +1,7 @@
 /* global it, describe, before, beforeEach, afterEach */
 'use strict'
 
-const ao = require('../..')
+const apm = require('../..')
 
 const helper = require('../helper')
 const expect = require('chai').expect
@@ -128,10 +128,10 @@ describe(`pino v${version}`, function () {
   // Intercept messages for analysis
   //
   beforeEach(function (done) {
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.cfg.insertTraceIdsIntoLogs = true
-    ao.probes.fs.enabled = false
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.cfg.insertTraceIdsIntoLogs = true
+    apm.probes.fs.enabled = false
 
     emitter = helper.backend(done)
   })
@@ -143,7 +143,7 @@ describe(`pino v${version}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -162,7 +162,7 @@ describe(`pino v${version}`, function () {
       const message = `synchronous traced setting = ${mode}`
       let traceId
 
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
 
       function localDone () {
         checkEventInfo(eventInfo, level, message, mode === false ? undefined : traceId)
@@ -170,8 +170,8 @@ describe(`pino v${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           // log
           logger.info(message)
         })
@@ -198,19 +198,19 @@ describe(`pino v${version}`, function () {
       let traceId
 
       // these are reset in beforeEach() so set in each test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
-      ao.traceMode = 0
-      ao.sampleRate = 0
+      apm.cfg.insertTraceIdsIntoLogs = mode
+      apm.traceMode = 0
+      apm.sampleRate = 0
 
       function test () {
-        traceId = ao.lastEvent.toString()
+        traceId = apm.lastEvent.toString()
         expect(traceId[traceId.length - 1] === '0', 'traceId shoud be unsampled')
         logger.info(message)
         return 'test-done'
       }
 
-      const traceparent = ao.addon.Event.makeRandom(0).toString()
-      const result = ao.startOrContinueTrace(traceparent, '', spanName, test)
+      const traceparent = apm.addon.Event.makeRandom(0).toString()
+      const result = apm.startOrContinueTrace(traceparent, '', spanName, test)
 
       expect(result).equal('test-done')
       checkEventInfo(eventInfo, level, message, maybe ? undefined : traceId)
@@ -221,7 +221,7 @@ describe(`pino v${version}`, function () {
     const level = 'info'
     const message = 'always insert'
 
-    ao.cfg.insertTraceIdsIntoLogs = 'always'
+    apm.cfg.insertTraceIdsIntoLogs = 'always'
 
     logger.info(message)
 
@@ -239,7 +239,7 @@ describe(`pino v${version}`, function () {
     }
 
     function asyncFunction (cb) {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       logger.error(message)
       setTimeout(function () {
         cb()
@@ -247,7 +247,7 @@ describe(`pino v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, asyncFunction, done)
+      apm.instrument(spanName, asyncFunction, done)
     }, [
       function (msg) {
         msg.should.have.property('Layer', spanName)
@@ -272,7 +272,7 @@ describe(`pino v${version}`, function () {
     }
 
     function promiseFunction () {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       logger[level](message)
       return new Promise((resolve, reject) => {
         setTimeout(function () {
@@ -284,7 +284,7 @@ describe(`pino v${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(spanName, promiseFunction).then(r => {
+        apm.pInstrument(spanName, promiseFunction).then(r => {
           expect(r).equal(result)
           done()
         })
@@ -302,7 +302,7 @@ describe(`pino v${version}`, function () {
 
   it('should insert trace IDs using the function directly', function (done) {
     const level = 'info'
-    ao.cfg.insertTraceIdsIntoLogs = false
+    apm.cfg.insertTraceIdsIntoLogs = false
     const message = 'helper and synchronous %s'
     let traceId
 
@@ -315,8 +315,8 @@ describe(`pino v${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           logger[level](message, traceId)
         })
         done()

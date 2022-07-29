@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const tedious = require('tedious')
 const pkg = require('tedious/package.json')
@@ -21,7 +21,7 @@ describe(`probes.tedious ${pkg.version}`, function () {
   let emitter
 
   beforeEach(function (done) {
-    ao.probes.tedious.enabled = true
+    apm.probes.tedious.enabled = true
     setTimeout(function () {
       done()
     }, 250)
@@ -32,11 +32,11 @@ describe(`probes.tedious ${pkg.version}`, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
-    ao.probes.fs.enabled = false
-    ao.probes.dns.enabled = false
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
+    apm.probes.fs.enabled = false
+    apm.probes.dns.enabled = false
   })
   after(function (done) {
     emitter.close(done)
@@ -44,7 +44,7 @@ describe(`probes.tedious ${pkg.version}`, function () {
 
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -55,12 +55,12 @@ describe(`probes.tedious ${pkg.version}`, function () {
   })
 
   it('should be configured to sanitize SQL by default', function () {
-    ao.probes.tedious.should.have.property('sanitizeSql', true)
-    ao.probes.tedious.sanitizeSql = false
+    apm.probes.tedious.should.have.property('sanitizeSql', true)
+    apm.probes.tedious.sanitizeSql = false
   })
 
   it('should be configured to not tag SQL by default', function () {
-    ao.probes.tedious.should.have.property('tagSql', false)
+    apm.probes.tedious.should.have.property('tagSql', false)
   })
 
   const checks = {
@@ -150,7 +150,7 @@ describe(`probes.tedious ${pkg.version}`, function () {
 
   function test_sanitization (done) {
     helper.test(emitter, function (done) {
-      ao.probes.tedious.sanitizeSql = true
+      apm.probes.tedious.sanitizeSql = true
       query(function () {
         const request = new tedious.Request('select 42, @msg', onComplete)
         request.addParameter('msg', tedious.TYPES.VarChar, 'hello world')
@@ -171,7 +171,7 @@ describe(`probes.tedious ${pkg.version}`, function () {
         checks['mssql-exit'](msg)
       }
     ], function (err) {
-      ao.probes.tedious.sanitizeSql = false
+      apm.probes.tedious.sanitizeSql = false
       done(err)
     })
   }
@@ -203,13 +203,13 @@ describe(`probes.tedious ${pkg.version}`, function () {
         checks['mssql-exit'](msg)
       }
     ], function (err) {
-      ao.probes.tedious.sanitizeSql = false
+      apm.probes.tedious.sanitizeSql = false
       done(err)
     })
   }
 
   function test_tag (done) {
-    ao.probes.tedious.tagSql = true
+    apm.probes.tedious.tagSql = true
     helper.test(emitter, function (done) {
       query(function () {
         return new tedious.Request("select 42, 'hello world'", onComplete)
@@ -227,13 +227,13 @@ describe(`probes.tedious ${pkg.version}`, function () {
         checks['mssql-exit'](msg)
       }
     ], function (err) {
-      ao.probes.tedious.tagSql = false
+      apm.probes.tedious.tagSql = false
       done(err)
     })
   }
 
   function test_disabled (done) {
-    ao.probes.tedious.enabled = false
+    apm.probes.tedious.enabled = false
 
     helper.test(emitter, function (done) {
       query(function () {

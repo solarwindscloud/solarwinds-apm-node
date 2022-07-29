@@ -1,6 +1,6 @@
 'use strict'
 
-const ao = require('../lib')
+const apm = require('../lib')
 const util = require('util')
 
 // require should so that individual tests can be debugged using
@@ -12,28 +12,28 @@ const should = require('should') // eslint-disable-line
 const env = process.env
 
 if (env.SW_APM_REPORTER !== 'udp') {
-  ao.loggers.warn('It looks like you need to "source env.sh bash" for tests to work correctly')
+  apm.loggers.warn('It looks like you need to "source env.sh bash" for tests to work correctly')
 }
 
-ao.loggers.addGroup({
+apm.loggers.addGroup({
   groupName: 'test',
   subNames: ['info', 'mock-port', 'messages', 'span', 'cls', 'debug']
 })
 
-if (!ao.g.taskDict) {
-  ao.g.taskDict = {}
+if (!apm.g.taskDict) {
+  apm.g.taskDict = {}
 }
 
 function startTest (file, options = {}) {
-  ao.g.current = file.slice(file.lastIndexOf('/') + 1)
-  ao.loggers.test.info('starting test: ', file)
-  ao.loggers.test.cls(`entering ${ao.g.current}: %c`, ao.requestStore)
+  apm.g.current = file.slice(file.lastIndexOf('/') + 1)
+  apm.loggers.test.info('starting test: ', file)
+  apm.loggers.test.cls(`entering ${apm.g.current}: %c`, apm.requestStore)
 
   applyOptions(options)
 }
 
 function endTest (options = {}) {
-  ao.loggers.test.cls(`exiting ${ao.g.current}: %c`, ao.requestStore)
+  apm.loggers.test.cls(`exiting ${apm.g.current}: %c`, apm.requestStore)
 
   applyOptions(options)
 }
@@ -44,7 +44,7 @@ const debugOptions = {
 
 function applyOptions (options) {
   // work when using standard cls-hooked.
-  if (!ao.requestStore.setDebugOptions) {
+  if (!apm.requestStore.setDebugOptions) {
     return
   }
   // don't modify the caller's options object
@@ -57,7 +57,7 @@ function applyOptions (options) {
 
     opts = Object.assign({}, debugOptions, opts)
   }
-  ao.requestStore.setDebugOptions(opts)
+  apm.requestStore.setDebugOptions(opts)
 }
 
 const formatters = {
@@ -107,10 +107,10 @@ function clsFormatAbbrev (active) {
 }
 
 // make function available without explicit imports
-ao.g.testing = startTest // replace no-op
-ao.g.startTest = startTest
-ao.g.endTest = endTest
+apm.g.testing = startTest // replace no-op
+apm.g.startTest = startTest
+apm.g.endTest = endTest
 
-exports.ao = ao
+exports.apm = apm
 exports.startTest = startTest
 exports.endTest = endTest

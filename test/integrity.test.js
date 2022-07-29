@@ -21,7 +21,7 @@ describe('integrity', function () {
     // all functions operate in a compatible way. that can be added over time if errors
     // turn out to be a problem.
     //
-    const skeletalAo = {
+    const skeletalApm = {
       loggers: {
         addGroup () {},
         Debounce: function () {
@@ -39,11 +39,11 @@ describe('integrity', function () {
     // can't require ../lib/api due to cyclic dependencies.
     // load all and filter out keys that are not api.
     // TODO: when cyclic is solved can revert to pattern as used for api-sim
-    const aoApi = require('../lib/')
+    const apmApi = require('../lib/')
     const notApi = '_stats, version, g, root, omitTraceId, logger, loggers, logLevel, logLevelAdd, logLevelRemove, probes, specialUrls, execEnv, cfg, getDomainPrefix, makeLogMissing, modeMap, modeToStringMap, cls, addon, reporter, control, startup, debugLogging, traceMode, sampleRate, tracing, traceId, lastEvent, lastSpan, maps, requestStore, resetRequestStore, clsCheck, stack, backtrace, bind, bindEmitter, setCustomTxNameFunction, wrappedFlag, fs'
-    const apiKeys = new Set([...new Set([...Object.getOwnPropertyNames(aoApi)])].filter(item => notApi.indexOf(item) === -1))
+    const apiKeys = new Set([...new Set([...Object.getOwnPropertyNames(apmApi)])].filter(item => notApi.indexOf(item) === -1))
 
-    const aoSim = require('../lib/api-sim')(Object.assign({}, skeletalAo))
+    const aoSim = require('../lib/api-sim')(Object.assign({}, skeletalApm))
     const simKeys = new Set([...Object.getOwnPropertyNames(aoSim)])
 
     const missing = new Set()

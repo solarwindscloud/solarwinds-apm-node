@@ -3,7 +3,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 const semver = require('semver')
 
 const expect = require('chai').expect
@@ -25,35 +25,35 @@ describe(`probes.restify ${pkg.version}`, function () {
   let emitter
   let fsState
   let previousTraces
-  const previousHttpClient = ao.probes['http-client'].enabled
+  const previousHttpClient = apm.probes['http-client'].enabled
 
   //
   // Intercept messages for analysis
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     // restify newer versions of restify use negotiator which does file io
-    fsState = ao.probes.fs.enabled
-    ao.probes.fs.enabled = false
-    previousTraces = ao.probes.restify.collectBacktraces
-    ao.probes.restify.collectBacktraces = false
-    ao.probes['http-client'].enabled = false
-    ao.g.testing(__filename)
+    fsState = apm.probes.fs.enabled
+    apm.probes.fs.enabled = false
+    previousTraces = apm.probes.restify.collectBacktraces
+    apm.probes.restify.collectBacktraces = false
+    apm.probes['http-client'].enabled = false
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
     // turn on if desired for testing context
-    if (ao.requestStore.getMetrics) {
+    if (apm.requestStore.getMetrics) {
       process.on('exit', function () {
-        ao.requestStore._hook.disable()
-        interpretMetrics(ao.requestStore.getMetrics())
+        apm.requestStore._hook.disable()
+        interpretMetrics(apm.requestStore.getMetrics())
       })
     }
-    ao.probes.fs.enabled = fsState
-    ao.probes.restify.collectBacktraces = previousTraces
-    ao.probes['http-client'].enabled = previousHttpClient
+    apm.probes.fs.enabled = fsState
+    apm.probes.restify.collectBacktraces = previousTraces
+    apm.probes['http-client'].enabled = previousHttpClient
   })
 
   const check = {
@@ -77,7 +77,7 @@ describe(`probes.restify ${pkg.version}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {

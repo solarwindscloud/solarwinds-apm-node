@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common.js')
+const { apm } = require('../1.test-common.js')
 const noop = helper.noop
 const once = require('../../lib/utility').once
 
@@ -44,8 +44,8 @@ describe('probes.zlib once', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
     emitter.close(done)
@@ -54,7 +54,7 @@ describe('probes.zlib once', function () {
   // fake test to work around UDP dropped message issue
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', noop)
+      apm.instrument('fake', noop)
       done()
     }, [
       function (msg) {
@@ -74,8 +74,8 @@ describe('probes.zlib', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
     emitter.close(done)

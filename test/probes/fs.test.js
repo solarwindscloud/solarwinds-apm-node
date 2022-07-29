@@ -2,13 +2,13 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 const expect = require('chai').expect
 
 const path = require('path')
 const fs = require('fs')
 
-ao.probes.fs.collectBacktraces = false
+apm.probes.fs.collectBacktraces = false
 
 describe('probes.fs', function () {
   let emitter
@@ -18,7 +18,7 @@ describe('probes.fs', function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -75,8 +75,8 @@ describe('probes.fs', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
     emitter.close(done)
@@ -537,10 +537,10 @@ describe('probes.fs', function () {
   })
 
   it('should fail openSync calls gracefully', function (done) {
-    const previousIgnoreErrors = ao.probes.fs.ignoreErrors
-    delete ao.probes.fs.ignoreErrors
+    const previousIgnoreErrors = apm.probes.fs.ignoreErrors
+    delete apm.probes.fs.ignoreErrors
     function reset (err) {
-      ao.probes.fs.ignoreErrors = previousIgnoreErrors
+      apm.probes.fs.ignoreErrors = previousIgnoreErrors
       done(err)
     }
     helper.test(emitter, function (done) {
@@ -564,10 +564,10 @@ describe('probes.fs', function () {
   })
 
   it('should suppress openSync errors when requested', function (done) {
-    const previousIgnoreErrors = ao.probes.fs.ignoreErrors
-    ao.probes.fs.ignoreErrors = { open: { ENOENT: true } }
+    const previousIgnoreErrors = apm.probes.fs.ignoreErrors
+    apm.probes.fs.ignoreErrors = { open: { ENOENT: true } }
     function reset (err) {
-      ao.probes.fs.ignoreErrors = previousIgnoreErrors
+      apm.probes.fs.ignoreErrors = previousIgnoreErrors
       done(err)
     }
     helper.test(emitter, function (done) {
@@ -591,10 +591,10 @@ describe('probes.fs', function () {
   })
 
   it('should suppress statSync errors when requested', function (done) {
-    const previousIgnoreErrors = ao.probes.fs.ignoreErrors
-    ao.probes.fs.ignoreErrors = { stat: { ENOENT: true } }
+    const previousIgnoreErrors = apm.probes.fs.ignoreErrors
+    apm.probes.fs.ignoreErrors = { stat: { ENOENT: true } }
     function reset (err) {
-      ao.probes.fs.ignoreErrors = previousIgnoreErrors
+      apm.probes.fs.ignoreErrors = previousIgnoreErrors
       done(err)
     }
     helper.test(emitter, function (done) {
@@ -618,10 +618,10 @@ describe('probes.fs', function () {
   })
 
   it('should report open errors', function (done) {
-    const previousIgnoreErrors = ao.probes.fs.ignoreErrors
-    delete ao.probes.fs.ignoreErrors
+    const previousIgnoreErrors = apm.probes.fs.ignoreErrors
+    delete apm.probes.fs.ignoreErrors
     function reset (err) {
-      ao.probes.fs.ignoreErrors = previousIgnoreErrors
+      apm.probes.fs.ignoreErrors = previousIgnoreErrors
       done(err)
     }
     helper.test(emitter, function (done) {
@@ -644,10 +644,10 @@ describe('probes.fs', function () {
   })
 
   it('should suppress open errors when requested', function (done) {
-    const previousIgnoreErrors = ao.probes.fs.ignoreErrors
-    ao.probes.fs.ignoreErrors = { open: { ENOENT: true } }
+    const previousIgnoreErrors = apm.probes.fs.ignoreErrors
+    apm.probes.fs.ignoreErrors = { open: { ENOENT: true } }
     function reset (err) {
-      ao.probes.fs.ignoreErrors = previousIgnoreErrors
+      apm.probes.fs.ignoreErrors = previousIgnoreErrors
       done(err)
     }
     helper.test(emitter, function (done) {
@@ -670,10 +670,10 @@ describe('probes.fs', function () {
   })
 
   it('should suppress stat errors when requested', function (done) {
-    const previousIgnoreErrors = ao.probes.fs.ignoreErrors
-    ao.probes.fs.ignoreErrors = { stat: { ENOENT: true } }
+    const previousIgnoreErrors = apm.probes.fs.ignoreErrors
+    apm.probes.fs.ignoreErrors = { stat: { ENOENT: true } }
     function reset (err) {
-      ao.probes.fs.ignoreErrors = previousIgnoreErrors
+      apm.probes.fs.ignoreErrors = previousIgnoreErrors
       done(err)
     }
     helper.test(emitter, function (done) {

@@ -2,9 +2,9 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
-const legacy = ao.probes.express.legacyTxname
+const legacy = apm.probes.express.legacyTxname
 
 const semver = require('semver')
 const axios = require('axios')
@@ -16,7 +16,7 @@ const methodOverride = require('method-override')
 // global configuration that probably should be set
 // outside so multiple passes can be run from the
 // same file with a little wrapper.
-ao.probes.express.legacyTxname = false && legacy
+apm.probes.express.legacyTxname = false && legacy
 
 //
 // helper function to return a function that returns expected results for:
@@ -35,7 +35,7 @@ function makeExpected (req, func) {
     let action
     let result
 
-    if (ao.probes.express.legacyTxname) {
+    if (apm.probes.express.legacyTxname) {
       // old way of setting these
       // Controller = req.route.path
       // Action = func.name || '(anonymous)'
@@ -59,8 +59,8 @@ function makeExpected (req, func) {
       result = `express-route:${func.name || 'anonymous'}`
     }
 
-    if (ao.cfg.domainPrefix && what === 'tx') {
-      const prefix = ao.getDomainPrefix(req)
+    if (apm.cfg.domainPrefix && what === 'tx') {
+      const prefix = apm.getDomainPrefix(req)
       if (prefix) {
         result = prefix + '/' + result
       }
@@ -83,15 +83,15 @@ describe('probes.express ' + pkg.version, function () {
   // Intercept messages for analysis
   //
   before(function (done) {
-    ao.probes.express.collectBacktraces = false
-    ao.probes.fs.enabled = false
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.probes.express.collectBacktraces = false
+    apm.probes.fs.enabled = false
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     emitter = helper.backend(done)
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
 
@@ -100,9 +100,9 @@ describe('probes.express ' + pkg.version, function () {
       const title = this.currentTest.title
 
       if (title.indexOf('should allow a custom TransactionName') === 0) {
-        // ao.logLevelAdd('test:messages')
+        // apm.logLevelAdd('test:messages')
       } else {
-        ao.logLevelRemove('test:messages')
+        apm.logLevelRemove('test:messages')
       }
 
       if (title === 'UDP might lose a message') {
@@ -214,7 +214,7 @@ describe('probes.express ' + pkg.version, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -236,11 +236,11 @@ describe('probes.express ' + pkg.version, function () {
   })
 
   it('should forward controller/action with domain prefix', function (done) {
-    ao.cfg.domainPrefix = true
+    apm.cfg.domainPrefix = true
     try {
       forwardControllerAction('get', done)
     } finally {
-      ao.cfg.domainPrefix = false
+      apm.cfg.domainPrefix = false
     }
   })
 
@@ -360,11 +360,11 @@ describe('probes.express ' + pkg.version, function () {
       return result
     }
 
-    ao.cfg.domainPrefix = true
+    apm.cfg.domainPrefix = true
     try {
       customTransactionName(custom, done)
     } finally {
-      ao.cfg.domainPrefix = false
+      apm.cfg.domainPrefix = false
     }
   })
 
@@ -401,7 +401,7 @@ describe('probes.express ' + pkg.version, function () {
 
     const app = express()
 
-    ao.setCustomTxNameFunction('express', custom)
+    apm.setCustomTxNameFunction('express', custom)
 
     app.get(reqRoutePath, hello)
 
@@ -437,7 +437,7 @@ describe('probes.express ' + pkg.version, function () {
           expectedCustom = expected('tx')
         }
         // */
-        if (ao.cfg.domainPrefix) {
+        if (apm.cfg.domainPrefix) {
           expectedCustom = customReq.headers.host + '/' + expectedCustom
         }
         msg.should.have.property('TransactionName', expectedCustom)
@@ -826,7 +826,7 @@ describe('probes.express ' + pkg.version, function () {
   })
 
   it('should skip when disabled', function (done) {
-    ao.probes.express.enabled = false
+    apm.probes.express.enabled = false
     const app = express()
 
     app.set('views', __dirname)
@@ -847,7 +847,7 @@ describe('probes.express ' + pkg.version, function () {
       }
     ]
     helper.doChecks(emitter, validations, function () {
-      ao.probes.express.enabled = true
+      apm.probes.express.enabled = true
       server.close(done)
     })
 
@@ -863,7 +863,7 @@ describe('probes.express ' + pkg.version, function () {
 
     function route (req, res, next) {
       expected = makeExpected(req, route)
-      ao.instrument(function (span) {
+      apm.instrument(function (span) {
         return span.descend('sub')
       }, setImmediate, function (err, res) {
         next(error)
@@ -876,7 +876,7 @@ describe('probes.express ' + pkg.version, function () {
     app.get(reqRoutePath, route)
 
     app.use(function (error, req, res, next) {
-      ao.reportError(error)
+      apm.reportError(error)
       res.send('test')
     })
 

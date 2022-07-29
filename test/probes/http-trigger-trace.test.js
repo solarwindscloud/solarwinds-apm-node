@@ -2,11 +2,11 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 const expect = require('chai').expect
-const addon = ao.addon
-const aob = addon
-const testdebug = ao.logger.make('testdebug')
+const addon = apm.addon
+const apmb = addon
+const testdebug = apm.logger.make('testdebug')
 
 const http = require('http')
 const axios = require('axios')
@@ -275,7 +275,7 @@ function makeSignedHeaders (test) {
 
   // add an headers with appropriate sample bit if requested
   if ('outHeaders' in test) {
-    const traceparent = ao.addon.Event.makeRandom(test.outHeaders).toString()
+    const traceparent = apm.addon.Event.makeRandom(test.outHeaders).toString()
     headers.traceparent = traceparent
     headers.tracestate = `sw=${traceparent.split('-')[2]}-${traceparent.split('-')[3]}`
   }
@@ -287,19 +287,19 @@ function makeSignedHeaders (test) {
 // helpers to disable/restore trigger-tracing and tracing
 //
 function disableTT () {
-  erStack.push(ao.cfg.triggerTraceEnabled)
-  ao.cfg.triggerTraceEnabled = false
+  erStack.push(apm.cfg.triggerTraceEnabled)
+  apm.cfg.triggerTraceEnabled = false
 }
 function restoreTT () {
-  ao.cfg.triggerTraceEnabled = erStack.pop()
+  apm.cfg.triggerTraceEnabled = erStack.pop()
 }
 
 function disableTracing () {
-  erStack.push(ao.traceMode)
-  ao.traceMode = 'disabled'
+  erStack.push(apm.traceMode)
+  apm.traceMode = 'disabled'
 }
 function restoreTracing () {
-  ao.traceMode = erStack.pop()
+  apm.traceMode = erStack.pop()
 }
 
 // helper to force rate-exceeded return
@@ -316,7 +316,7 @@ function restoreTracing () {
 //  const results = [];
 //
 //  while (counter++ < 100) {
-//    const settings = ao.addon.Settings.getTraceSettings('', options);
+//    const settings = apm.addon.Settings.getTraceSettings('', options);
 //    results.push(settings.status);
 //    if (settings.status !== 0) {
 //      console.log(settings.status, settings.message);
@@ -327,9 +327,9 @@ function restoreTracing () {
 
 // helper to wrap getTraceSettings()
 function wrapGTS () {
-  const realGetTraceSettings = ao.getTraceSettings
+  const realGetTraceSettings = apm.getTraceSettings
   erStack.push(realGetTraceSettings)
-  ao.getTraceSettings = function wrappedGetTraceSettings (...args) {
+  apm.getTraceSettings = function wrappedGetTraceSettings (...args) {
     const settings = realGetTraceSettings(...args)
     if (settings.status > 0) {
       return settings
@@ -339,12 +339,12 @@ function wrapGTS () {
     settings.doSample = false
     settings.doMetrics = false
     // the event that getTraceSettings returned isn't important.
-    settings.traceTaskId = aob.Event.makeRandom(0)
+    settings.traceTaskId = apmb.Event.makeRandom(0)
     return settings
   }
 }
 function unwrapGTS () {
-  ao.getTraceSettings = erStack.pop()
+  apm.getTraceSettings = erStack.pop()
 }
 
 //
@@ -356,11 +356,11 @@ describe('probes.http trigger-trace', function () {
   before(function (done) {
     // setup to handle messages
     emitter = helper.backend(done)
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
 
     // set the testing context for debugging tests.
-    ao.g.testing(__filename)
+    apm.g.testing(__filename)
   })
 
   let options
@@ -390,7 +390,7 @@ describe('probes.http trigger-trace', function () {
     emitter.close(done)
   })
   after(function () {
-    testdebug(`enters ${ao.Span.entrySpanEnters} exits ${ao.Span.entrySpanExits}`)
+    testdebug(`enters ${apm.Span.entrySpanEnters} exits ${apm.Span.entrySpanExits}`)
   })
 
   // from test/http.test.js
@@ -410,7 +410,7 @@ describe('probes.http trigger-trace', function () {
   // would be nice if oboe had a udp-counter.
   it('should do it\'s UDP thing', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {

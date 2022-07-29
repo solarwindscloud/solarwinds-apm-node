@@ -5,15 +5,15 @@
 
 'use strict'
 
-const ao = require('..')
+const apm = require('..')
 const fs = require('fs')
 const Emitter = require('events').EventEmitter
 const helper = require('./helper')
 const should = require('should')
 const expect = require('chai').expect
-const aob = ao.addon
-const Span = ao.Span
-const Event = ao.Event
+const apmb = apm.addon
+const Span = apm.Span
+const Event = apm.Event
 
 const Q = require('q')
 const bluebird = require('bluebird')
@@ -38,41 +38,41 @@ function bbpsoon () {
 
 // Without the native liboboe bindings present,
 // the custom instrumentation should be a no-op
-if (aob.version === 'not loaded') {
+if (apmb.version === 'not loaded') {
   describe('custom (without native bindings present)', function () {
     it('should passthrough sync instrument', function () {
       let counter = 0
-      ao.instrument('test', function () {
+      apm.instrument('test', function () {
         counter++
       })
       counter.should.equal(1)
     })
     it('should passthrough async instrument', function (done) {
-      ao.instrument('test', soon, {}, done)
+      apm.instrument('test', soon, {}, done)
     })
 
     it('should passthrough sync startOrContinueTrace', function () {
       let counter = 0
-      ao.startOrContinueTrace(null, null, 'test', function () {
+      apm.startOrContinueTrace(null, null, 'test', function () {
         counter++
       })
       counter.should.equal(1)
     })
     it('should passthrough async startOrContinueTrace', function (done) {
-      ao.startOrContinueTrace(null, null, 'test', soon, done)
+      apm.startOrContinueTrace(null, null, 'test', soon, done)
     })
 
     it('should support callback shifting', function (done) {
-      ao.instrument('test', soon, done)
+      apm.instrument('test', soon, done)
     })
 
     it('should not fail when accessing traceId', function () {
-      ao.traceId
+      apm.traceId
     })
   })
 }
 
-ao.requestStore.captureHooks = false
+apm.requestStore.captureHooks = false
 
 //= ===============================
 // custom tests with addon enabled
@@ -87,7 +87,7 @@ describe('custom', function () {
   let main
 
   after(function () {
-    ao.loggers.debug(`enters ${ao.Span.entrySpanEnters} exits ${ao.Span.entrySpanExits}`)
+    apm.loggers.debug(`enters ${apm.Span.entrySpanEnters} exits ${apm.Span.entrySpanExits}`)
   })
 
   beforeEach(function () {
@@ -98,9 +98,9 @@ describe('custom', function () {
 
   beforeEach(function () {
     if (this.currentTest.title === 'should continue from previous trace id') {
-      // ao.logLevelAdd('test:*');
+      // apm.logLevelAdd('test:*');
     } else {
-      // ao.logLevelRemove('test:span');
+      // apm.logLevelRemove('test:span');
     }
   })
 
@@ -108,8 +108,8 @@ describe('custom', function () {
   // Intercept messages for analysis
   //
   beforeEach(function (done) {
-    ao.sampleRate = aob.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apmb.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     emitter = helper.backend(done)
   })
   afterEach(function (done) {
@@ -124,7 +124,7 @@ describe('custom', function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -136,7 +136,7 @@ describe('custom', function () {
 
   it('should custom instrument sync code', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument(main, function () {})
+      apm.instrument(main, function () {})
       done()
     }, [
       function (msg) {
@@ -152,7 +152,7 @@ describe('custom', function () {
 
   it('should custom instrument async code', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument(main, soon, done)
+      apm.instrument(main, soon, done)
     }, [
       function (msg) {
         msg.should.have.property('Layer', main)
@@ -169,7 +169,7 @@ describe('custom', function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(main, psoon).then(r => {
+        apm.pInstrument(main, psoon).then(r => {
           done()
         })
       }, [
@@ -188,7 +188,7 @@ describe('custom', function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(main, qpsoon).then(r => {
+        apm.pInstrument(main, qpsoon).then(r => {
           done()
         })
       }, [
@@ -207,7 +207,7 @@ describe('custom', function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(main, bbpsoon).then(r => {
+        apm.pInstrument(main, bbpsoon).then(r => {
           done()
         })
       }, [
@@ -224,7 +224,7 @@ describe('custom', function () {
 
   it('should support spanInfo function', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument(
+      apm.instrument(
         function () {
           return {
             name: main,
@@ -246,7 +246,7 @@ describe('custom', function () {
 
   it('should allow optional callback with async code', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument(main, function (doneInner) {
+      apm.instrument(main, function (doneInner) {
         soon(function () {
           doneInner()
           done()
@@ -266,7 +266,7 @@ describe('custom', function () {
 
   it('should include backtrace when collectBacktraces is on', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument(main, soon, {
+      apm.instrument(main, soon, {
         collectBacktraces: true,
         enabled: true
       }, done)
@@ -285,7 +285,7 @@ describe('custom', function () {
 
   it('should skip when not enabled', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument(main, soon, {
+      apm.instrument(main, soon, {
         enabled: false
       }, done)
     }, [], done)
@@ -296,10 +296,10 @@ describe('custom', function () {
     let last
 
     helper.test(emitter, function (done) {
-      ao.instrument(function (span) {
+      apm.instrument(function (span) {
         return { name: main }
       }, function (callback) {
-        ao.reportInfo(data)
+        apm.reportInfo(data)
         callback()
       }, conf, done)
     }, [
@@ -415,24 +415,24 @@ describe('custom', function () {
     helper.test(emitter, function (done) {
       function makeInner (data, done) {
         const name = 'inner-' + data.Index
-        const span = ao.lastSpan.descend(name)
+        const span = apm.lastSpan.descend(name)
         inner.push(span)
         span.run(function (wrap) {
           const delayed = wrap(done)
-          ao.reportInfo(data)
+          apm.reportInfo(data)
           process.nextTick(function () {
             delayed()
           })
         })
       }
 
-      outer = ao.lastSpan.descend('link-test')
+      outer = apm.lastSpan.descend('link-test')
       outer.run(function () {
         const cb = after(2, done)
         makeInner({
           Index: 0
         }, cb)
-        ao.reportInfo({
+        apm.reportInfo({
           Index: 1
         })
         makeInner({
@@ -447,10 +447,10 @@ describe('custom', function () {
     let last
 
     helper.test(emitter, function (done) {
-      ao.instrument(function (span) {
+      apm.instrument(function (span) {
         return { name: main }
       }, function (callback) {
-        ao.reportInfo(data)
+        apm.reportInfo(data)
         callback()
       }, conf, done)
     }, [
@@ -501,22 +501,22 @@ describe('custom', function () {
       helper.checkLogMessages(logChecks)
 
       // Verify nothing bad happens when run function is missing
-      ao.instrument(build)
-      ao.startOrContinueTrace(null, null, build)
+      apm.instrument(build)
+      apm.startOrContinueTrace(null, null, build)
 
       // Verify nothing bad happens when build function is missing
-      ao.instrument(null, run)
-      ao.startOrContinueTrace(null, null, null, run)
+      apm.instrument(null, run)
+      apm.startOrContinueTrace(null, null, null, run)
 
       // Verify the runner is still run when spaninfo fails to return an object
-      ao.instrument(getInc(), getInc())
-      ao.startOrContinueTrace(null, null, getInc(), getInc())
+      apm.instrument(getInc(), getInc())
+      apm.startOrContinueTrace(null, null, getInc(), getInc())
       found.should.deepEqual(expected)
       count.should.equal(4)
 
       expected.push('nnrun')
       // Verify the runner is still run when spaninfo fails to return a name
-      ao.instrument(function () { return {} }, getInc())
+      apm.instrument(function () { return {} }, getInc())
       found.should.deepEqual(expected)
       count.should.equal(5)
 
@@ -564,16 +564,16 @@ describe('custom', function () {
       // helper.checkLogMessages.debug = true;
 
       // Verify nothing bad happens when run function is missing
-      ao.pInstrument(build, missing)
-      ao.pStartOrContinueTrace(null, null, build, missing)
+      apm.pInstrument(build, missing)
+      apm.pStartOrContinueTrace(null, null, build, missing)
 
       // Verify nothing bad happens when spanInfo is missing
-      ao.pInstrument(missing, run)
-      ao.pStartOrContinueTrace(null, null, missing, run)
+      apm.pInstrument(missing, run)
+      apm.pStartOrContinueTrace(null, null, missing, run)
 
       // Verify the runner is still run when spanInfo() fails to return an object
-      ao.pInstrument(getInc(), getInc())
-      ao.pStartOrContinueTrace(null, null, getInc(), getInc())
+      apm.pInstrument(getInc(), getInc())
+      apm.pStartOrContinueTrace(null, null, getInc(), getInc())
 
       expect(found).deep.equal(expected)
       expect(count).equal(4)
@@ -582,8 +582,8 @@ describe('custom', function () {
       expected.push('nnrun')
       expected.push('nnrun')
       // Verify the runner is still run when spanInfo() fails to return a name
-      ao.pInstrument(function () { return {} }, getInc())
-      ao.pStartOrContinueTrace(null, null, () => { return {} }, getInc())
+      apm.pInstrument(function () { return {} }, getInc())
+      apm.pStartOrContinueTrace(null, null, () => { return {} }, getInc())
 
       expect(found).deep.equal(expected)
       expect(count).equal(6)
@@ -610,18 +610,18 @@ describe('custom', function () {
       helper.checkLogMessages(logChecks)
 
       // Verify errors thrown in builder do not propagate
-      ao.instrument(nope, inc)
-      ao.startOrContinueTrace(null, null, nope, inc)
+      apm.instrument(nope, inc)
+      apm.startOrContinueTrace(null, null, nope, inc)
       count.should.equal(4)
 
       // Verify that errors thrown in the runner function *do* propagate
       count = 0
       function validateError (e) { return e === err }
       should.throws(function () {
-        ao.instrument(build, nope)
+        apm.instrument(build, nope)
       }, validateError)
       should.throws(function () {
-        ao.startOrContinueTrace(null, null, build, nope)
+        apm.startOrContinueTrace(null, null, build, nope)
       }, validateError)
       count.should.equal(2)
 
@@ -661,7 +661,7 @@ describe('custom', function () {
     })
 
     const test = 'foo'
-    const res = ao.startOrContinueTrace(null, null, main, function () {
+    const res = apm.startOrContinueTrace(null, null, main, function () {
       return test
     }, conf)
 
@@ -683,8 +683,8 @@ describe('custom', function () {
     }
 
     const test = 'foo'
-    const traceparent = aob.Event.makeRandom(0).toString()
-    const res = ao.startOrContinueTrace(traceparent, traceparent.split('-')[2] + '-' + traceparent.split('-')[3], main, function () { return test }, conf)
+    const traceparent = apmb.Event.makeRandom(0).toString()
+    const res = apm.startOrContinueTrace(traceparent, traceparent.split('-')[2] + '-' + traceparent.split('-')[3], main, function () { return test }, conf)
 
     res.should.equal(test)
     metricsSent.should.equal(0)
@@ -711,7 +711,7 @@ describe('custom', function () {
     ], done)
 
     const test = 'foo'
-    const res = ao.startOrContinueTrace(
+    const res = apm.startOrContinueTrace(
       null,
       null,
       main, // span name
@@ -760,7 +760,7 @@ describe('custom', function () {
 
     let p
     // pStartOrContinueTrace. psoon's ...args are used to resolve the promise.
-    const res = ao.pStartOrContinueTrace(
+    const res = apm.pStartOrContinueTrace(
       null,
       null,
       main, // span name
@@ -786,7 +786,7 @@ describe('custom', function () {
     let p
     let rdResult
     async function task () {
-      const p1 = ao.pStartOrContinueTrace(null, null, 'psooner', psoon)
+      const p1 = apm.pStartOrContinueTrace(null, null, 'psooner', psoon)
       const p2 = new Promise((resolve, reject) => {
         fs.readdir('.', (error, files) => {
           if (error) {
@@ -865,7 +865,7 @@ describe('custom', function () {
     })
 
     // pStartOrContinueTrace.
-    const res = ao.pStartOrContinueTrace(
+    const res = apm.pStartOrContinueTrace(
       null,
       null,
       main, // span name
@@ -914,13 +914,13 @@ describe('custom', function () {
       }
     ], done)
 
-    ao.startOrContinueTrace(
+    apm.startOrContinueTrace(
       '', // no traceparent/tracestate, start a trace
       '',
       'x-previous', // span name
       function (pcb) { // runner function, creates a new span
-        ao.startOrContinueTrace(
-          ao.lastSpan.events.entry.toString(), // continue from the last span's id.
+        apm.startOrContinueTrace(
+          apm.lastSpan.events.entry.toString(), // continue from the last span's id.
           '', // TODO?
           () => {
             return {
@@ -1010,28 +1010,28 @@ describe('custom', function () {
 
     previous.run(function (wrap) {
       // Verify ID-less calls continue
-      ao.startOrContinueTrace(
+      apm.startOrContinueTrace(
         null, // traceparent/tracestate
         null,
         'continue-outer', // span name
         function (cb) { // runner
           soon(function () {
           // Verify ID'd calls continue
-            ao.startOrContinueTrace(
+            apm.startOrContinueTrace(
               entry.toString(), // traceparent
               '', // TODO?
               'inner', // span name
               function (cb) { // runner pseudo-async
-                ao.requestStore.set('linger', true)
+                apm.requestStore.set('linger', true)
                 soon(function () {
-                  expect(ao.requestStore.get('linger')).equal(true)
+                  expect(apm.requestStore.get('linger')).equal(true)
                   // Verify newContext calls DO NOT continue when no traceparent
-                  ao.startOrContinueTrace(
+                  apm.startOrContinueTrace(
                     '',
                     '',
                     'new-trace', // span name
                     function (cb) { // runner pseudo-async
-                      expect(ao.requestStore.get('linger')).not.exist
+                      expect(apm.requestStore.get('linger')).not.exist
                       cb()
                     },
                     Object.assign({ forceNewTrace: true }, conf), // config
@@ -1051,16 +1051,16 @@ describe('custom', function () {
 
   // Verify startOrContinueTrace handles a false sample check correctly.
   it('should sample properly', function () {
-    const realGetTraceSettings = aob.Context.getTraceSettings
+    const realGetTraceSettings = apmb.Context.getTraceSettings
     let called = false
 
-    aob.Context.getTraceSettings = function () {
+    apmb.Context.getTraceSettings = function () {
       called = true
       return makeSettings({ source: 0, rate: 0 })
     }
 
-    // because a span is created and entered then ao.lastSpan & ao.lastEvent
-    // are cleared ao.startOrContinueTrace creates a new context, so the
+    // because a span is created and entered then apm.lastSpan & apm.lastEvent
+    // are cleared apm.startOrContinueTrace creates a new context, so the
     // next two errors should be generated.
     const logChecks = [
       { level: 'error', message: 'task IDs don\'t match' },
@@ -1072,12 +1072,12 @@ describe('custom', function () {
       helper.test(
         emitter,
         function (done) { // test function
-          ao.lastSpan = ao.lastEvent = null
-          ao.startOrContinueTrace(null, null, 'sample-properly', setImmediate, conf, done)
+          apm.lastSpan = apm.lastEvent = null
+          apm.startOrContinueTrace(null, null, 'sample-properly', setImmediate, conf, done)
         },
         [() => undefined, () => undefined], // checks
         function (err) {
-          aob.Context.getTraceSettings = realGetTraceSettings
+          apmb.Context.getTraceSettings = realGetTraceSettings
           expect(called).equal(true, 'the sample function should be called')
           if (err) {
             reject(err)
@@ -1093,58 +1093,58 @@ describe('custom', function () {
 
   // Verify traceId getter works correctly
   it('should get traceId when tracing and null when not', function () {
-    ao.requestStore.run(function () {
-      expect(ao.traceId).not.exist
-      expect(ao.tracing).equal(false)
-      ao.startOrContinueTrace(
+    apm.requestStore.run(function () {
+      expect(apm.traceId).not.exist
+      expect(apm.tracing).equal(false)
+      apm.startOrContinueTrace(
         null,
         null,
         main,
         function (cb) {
-          should.exist(ao.traceId)
+          should.exist(apm.traceId)
           cb()
         },
         function () {
-          should.exist(ao.traceId)
+          should.exist(apm.traceId)
         }
       )
-      should.not.exist(ao.traceId)
+      should.not.exist(apm.traceId)
     }, { newContext: true })
   })
 
   // it should handle bad bind arguments gracefully and issue warnings.
   it('should handle bad bind arguments correctly', function () {
-    const bind = ao.requestStore.bind
+    const bind = apm.requestStore.bind
     let threw = false
     const sequence = []
 
-    ao.requestStore.run(function () {
+    apm.requestStore.run(function () {
       let called = false
 
-      ao.requestStore.bind = function () {
+      apm.requestStore.bind = function () {
         called = true
       }
 
       function noop () {}
 
       const logChecks = [
-        { level: 'warn', message: 'ao.bind(%s) - no context', values: ['noop'] },
-        { level: 'warn', message: 'ao.bind(%s) - not a function', values: [null] }
+        { level: 'warn', message: 'apm.bind(%s) - no context', values: ['noop'] },
+        { level: 'warn', message: 'apm.bind(%s) - not a function', values: [null] }
       ]
       helper.checkLogMessages(logChecks)
 
       try {
-        ao.bind(noop)
+        apm.bind(noop)
         sequence.push(called)
         called = false
         const span = Span.makeEntrySpan(main, makeSettings())
         // don't let it try to send metrics
         span.doMetrics = false
         span.run(function () {
-          ao.bind(null)
+          apm.bind(null)
           sequence.push(called)
           called = false
-          ao.bind(noop)
+          apm.bind(noop)
           sequence.push(called)
         })
       } catch (e) {
@@ -1152,14 +1152,14 @@ describe('custom', function () {
       }
     }, { newContext: true })
 
-    ao.requestStore.bind = bind
+    apm.requestStore.bind = bind
 
     expect(sequence).deep.equal([false, false, true])
     expect(threw).equal(false, 'there should not have been an exception')
   })
 
   it('should bind emitters to requestStore', function () {
-    const bindEmitter = ao.requestStore.bindEmitter
+    const bindEmitter = apm.requestStore.bindEmitter
     let threw
     let called = false
 
@@ -1171,30 +1171,30 @@ describe('custom', function () {
     // this is a little tricky - bind emitter errors are debounced so not every
     // error results in a log message. the count appears in brackets.
     const logChecks = [
-      { level: 'warn', message: '[1]ao.bindEmitter - no context' },
-      { level: 'error', message: '[1]ao.bindEmitter - non-emitter' }
+      { level: 'warn', message: '[1]apm.bindEmitter - no context' },
+      { level: 'error', message: '[1]apm.bindEmitter - non-emitter' }
     ]
     helper.checkLogMessages(logChecks)
 
     try {
-      ao.resetRequestStore()
+      apm.resetRequestStore()
       // reset requestStore resets bindEmitter, so don't replace it with captureCall
       // until after resetting the request store.
-      ao.requestStore.bindEmitter = captureCall
-      ao.bindEmitter(emitter)
+      apm.requestStore.bindEmitter = captureCall
+      apm.bindEmitter(emitter)
       called.should.equal(false, 'bindEmitter should not have been called when no context')
       const span = Span.makeEntrySpan(main, makeSettings())
       span.run(function () {
-        ao.bindEmitter(null)
+        apm.bindEmitter(null)
         called.should.equal(false, 'bindEmitter should not have been called for null')
-        ao.bindEmitter(emitter)
+        apm.bindEmitter(emitter)
         called.should.equal(true, 'bindEmitter should be called for an emitter')
       })
     } catch (e) {
       threw = e.message
     }
 
-    ao.requestStore.bindEmitter = bindEmitter
+    apm.requestStore.bindEmitter = bindEmitter
 
     expect(threw).not.exist
   })
@@ -1206,7 +1206,7 @@ describe('custom', function () {
     let last
 
     helper.test(emitter, function (done) {
-      ao.instrumentHttp(
+      apm.instrumentHttp(
         () => {
           return {
             name: main
@@ -1250,9 +1250,9 @@ describe('custom', function () {
     }
 
     const test = 'foo'
-    const traceparent = aob.Event.makeRandom(0).toString()
+    const traceparent = apmb.Event.makeRandom(0).toString()
 
-    const res = ao.startOrContinueTrace(
+    const res = apm.startOrContinueTrace(
       traceparent,
       traceparent.split('-')[2] + '-' + traceparent.split('-')[3],
       main, // span name

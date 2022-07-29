@@ -2,8 +2,8 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
-ao.g.testing(__filename)
+const { apm } = require('../1.test-common')
+apm.g.testing(__filename)
 
 const assert = require('assert')
 
@@ -27,13 +27,13 @@ describe('probes/koa ' + pkg.version, function () {
   // Intercept messages for analysis
   //
   before(function (done) {
-    ao.probes.fs.enabled = false
+    apm.probes.fs.enabled = false
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
 
@@ -41,7 +41,7 @@ describe('probes/koa ' + pkg.version, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {

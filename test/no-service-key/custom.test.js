@@ -3,8 +3,8 @@
 
 process.env.SW_APM_SERVICE_KEY = ''
 
-const ao = require('../..')
-const aob = ao.addon
+const apm = require('../..')
+const apmb = apm.addon
 const assert = require('assert')
 
 const soon = global.setImmediate || process.nextTick
@@ -22,12 +22,12 @@ const traceparent = '00-0123456789abcdef0123456789abcdef-7a71b110e5e3588d-01'
 // the custom instrumentation should be a no-op
 describe('custom (without service key present)', function () {
   it('should have a bindings version of \'not loaded\'', function () {
-    assert(ao.addon.version === 'not loaded')
+    assert(apm.addon.version === 'not loaded')
   })
 
   it('should passthrough instrumentHttp', function () {
     let counter = 0
-    ao.instrumentHttp('span-name', function () {
+    apm.instrumentHttp('span-name', function () {
       counter += 1
     })
     assert(counter === 1)
@@ -35,7 +35,7 @@ describe('custom (without service key present)', function () {
 
   it('should passthrough sync instrument', function () {
     let counter = 0
-    ao.instrument('test', function () {
+    apm.instrument('test', function () {
       counter++
     })
     assert(counter === 1, 'counter should be 1')
@@ -45,7 +45,7 @@ describe('custom (without service key present)', function () {
     function localDone () {
       done()
     }
-    ao.instrument('test', soon, {}, localDone)
+    apm.instrument('test', soon, {}, localDone)
   })
 
   it('should passthrough pInstrument', function () {
@@ -56,7 +56,7 @@ describe('custom (without service key present)', function () {
       return Promise.resolve(99)
     }
 
-    return ao.pInstrument('test', pfunc).then(r => {
+    return apm.pInstrument('test', pfunc).then(r => {
       assert(counter === 1, 'counter should be 1')
       assert(r === 99, 'the result of pInstrument should be 99')
       return r
@@ -65,7 +65,7 @@ describe('custom (without service key present)', function () {
 
   it('should passthrough sync startOrContinueTrace', function () {
     let counter = 0
-    ao.startOrContinueTrace(null, null, 'test', function () {
+    apm.startOrContinueTrace(null, null, 'test', function () {
       counter++
     })
     assert(counter === 1, 'counter should be equal to 1')
@@ -75,7 +75,7 @@ describe('custom (without service key present)', function () {
     function localDone () {
       done()
     }
-    ao.startOrContinueTrace(null, null, 'test', soon, localDone)
+    apm.startOrContinueTrace(null, null, 'test', soon, localDone)
   })
 
   it('should passthrough pStartOrContinueTrace', function () {
@@ -85,7 +85,7 @@ describe('custom (without service key present)', function () {
       counter += 1
       return Promise.resolve(99)
     }
-    return ao.pStartOrContinueTrace(null, null, 'test', pfunc).then(r => {
+    return apm.pStartOrContinueTrace(null, null, 'test', pfunc).then(r => {
       assert(counter === 1, 'counter should be 1')
       assert(r === 99, 'the result of pStartOrContinueTrace should be 99')
       return r
@@ -93,7 +93,7 @@ describe('custom (without service key present)', function () {
   })
 
   it('should passthrough requestStore', function () {
-    const store = ao.requestStore
+    const store = apm.requestStore
 
     assert(typeof store === 'object')
     assert(store.name === 'apm-cls-context')
@@ -101,40 +101,40 @@ describe('custom (without service key present)', function () {
   })
 
   it('should support callback shifting', function (done) {
-    ao.instrument('test', soon, done)
+    apm.instrument('test', soon, done)
   })
 
   it('should supply API functions and properties', function () {
-    assert(ao.traceMode === 'disabled')
-    assert(ao.sampleRate === 0)
-    assert(ao.tracing === false)
-    assert(ao.traceId === undefined)
-    assert(ao.lastEvent === undefined)
-    assert(ao.lastSpan === undefined)
-    assert(ao.requestStore && typeof ao.requestStore.get === 'function')
-    assert(typeof ao.resetRequestStore === 'function')
-    assert(ao.clsCheck() === false)
-    assert(ao.stack() === '')
-    assert(ao.bind('x') === 'x')
-    assert(ao.bindEmitter('x') === 'x')
-    assert(ao.backtrace())
-    assert(ao.setCustomTxNameFunction('x') === false)
+    assert(apm.traceMode === 'disabled')
+    assert(apm.sampleRate === 0)
+    assert(apm.tracing === false)
+    assert(apm.traceId === undefined)
+    assert(apm.lastEvent === undefined)
+    assert(apm.lastSpan === undefined)
+    assert(apm.requestStore && typeof apm.requestStore.get === 'function')
+    assert(typeof apm.resetRequestStore === 'function')
+    assert(apm.clsCheck() === false)
+    assert(apm.stack() === '')
+    assert(apm.bind('x') === 'x')
+    assert(apm.bindEmitter('x') === 'x')
+    assert(apm.backtrace())
+    assert(apm.setCustomTxNameFunction('x') === false)
 
-    assert(ao.readyToSample() === false)
-    assert(ao.getTraceSettings().doSample === false)
-    assert(ao.sampling() === false)
-    assert(ao.traceToEvent('') === undefined)
-    assert(ao.traceToEvent(traceparent) instanceof aob.Event)
-    assert(ao.patchResponse('x') === undefined)
-    assert(ao.addResponseFinalizer('x') === undefined)
-    assert(ao.traceId === undefined)
-    assert(ao.reportError(new Error('xyzzy')) === undefined)
-    assert(ao.reportInfo('this is info') === undefined)
+    assert(apm.readyToSample() === false)
+    assert(apm.getTraceSettings().doSample === false)
+    assert(apm.sampling() === false)
+    assert(apm.traceToEvent('') === undefined)
+    assert(apm.traceToEvent(traceparent) instanceof apmb.Event)
+    assert(apm.patchResponse('x') === undefined)
+    assert(apm.addResponseFinalizer('x') === undefined)
+    assert(apm.traceId === undefined)
+    assert(apm.reportError(new Error('xyzzy')) === undefined)
+    assert(apm.reportInfo('this is info') === undefined)
 
-    const o = ao.getTraceObjectForLog()
+    const o = apm.getTraceObjectForLog()
     assert(typeof o === 'object')
     assert(Object.keys(o).length === 0)
 
-    assert(ao.getTraceStringForLog() === '')
+    assert(apm.getTraceStringForLog() === '')
   })
 })

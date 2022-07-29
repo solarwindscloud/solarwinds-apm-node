@@ -1,7 +1,7 @@
 /* global it, describe, before, beforeEach, afterEach */
 'use strict'
 
-const ao = require('../..')
+const apm = require('../..')
 
 const helper = require('../helper')
 const expect = require('chai').expect
@@ -87,10 +87,10 @@ describe(`log4js v${version}`, function () {
   // Intercept messages for analysis
   //
   beforeEach(function (done) {
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.cfg.insertTraceIdsIntoLogs = true
-    ao.probes.fs.enabled = false
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.cfg.insertTraceIdsIntoLogs = true
+    apm.probes.fs.enabled = false
 
     emitter = helper.backend(done)
   })
@@ -102,7 +102,7 @@ describe(`log4js v${version}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -132,7 +132,7 @@ describe(`log4js v${version}`, function () {
       const message = `synchronous traced setting = ${mode}`
       let traceId
 
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
 
       function localDone () {
         checkEventInfo(eventInfo, level, message, mode === false ? undefined : traceId)
@@ -140,8 +140,8 @@ describe(`log4js v${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           // log
           logger.info(message)
         })
@@ -168,19 +168,19 @@ describe(`log4js v${version}`, function () {
       let traceId
 
       // these are reset in beforeEach() so set in each test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
-      ao.traceMode = 0
-      ao.sampleRate = 0
+      apm.cfg.insertTraceIdsIntoLogs = mode
+      apm.traceMode = 0
+      apm.sampleRate = 0
 
       function test () {
-        traceId = ao.lastEvent.toString()
+        traceId = apm.lastEvent.toString()
         expect(traceId[traceId.length - 1] === '0', 'traceId should be unsampled')
         logger.info(message)
         return 'test-done'
       }
 
-      const traceparent = ao.addon.Event.makeRandom(0).toString()
-      const result = ao.startOrContinueTrace(traceparent, '', spanName, test)
+      const traceparent = apm.addon.Event.makeRandom(0).toString()
+      const result = apm.startOrContinueTrace(traceparent, '', spanName, test)
 
       expect(result).equal('test-done')
       checkEventInfo(eventInfo, level, message, maybe ? undefined : traceId)
@@ -191,7 +191,7 @@ describe(`log4js v${version}`, function () {
     const level = 'info'
     const message = 'always insert'
 
-    ao.cfg.insertTraceIdsIntoLogs = 'always'
+    apm.cfg.insertTraceIdsIntoLogs = 'always'
 
     logger.info(message)
 
@@ -209,7 +209,7 @@ describe(`log4js v${version}`, function () {
     }
 
     function asyncFunction (cb) {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       logger.error(message)
       setTimeout(function () {
         cb()
@@ -217,7 +217,7 @@ describe(`log4js v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, asyncFunction, done)
+      apm.instrument(spanName, asyncFunction, done)
     }, [
       function (msg) {
         msg.should.have.property('Layer', spanName)
@@ -242,7 +242,7 @@ describe(`log4js v${version}`, function () {
     }
 
     function promiseFunction () {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       logger[level](message)
       return new Promise((resolve, reject) => {
         setTimeout(function () {
@@ -254,7 +254,7 @@ describe(`log4js v${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(spanName, promiseFunction).then(r => {
+        apm.pInstrument(spanName, promiseFunction).then(r => {
           expect(r).equal(result)
           done()
         })
@@ -272,7 +272,7 @@ describe(`log4js v${version}`, function () {
 
   it('should insert trace IDs using the function directly', function (done) {
     const level = 'info'
-    ao.cfg.insertTraceIdsIntoLogs = false
+    apm.cfg.insertTraceIdsIntoLogs = false
     const message = 'helper and synchronous %s'
     let traceId
 
@@ -285,8 +285,8 @@ describe(`log4js v${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           logger[level](message, traceId)
         })
         done()
@@ -357,7 +357,7 @@ describe(`log4js v${version}`, function () {
       let level
       let traceId
 
-      ao.cfg.insertTraceIdsIntoLogs = true
+      apm.cfg.insertTraceIdsIntoLogs = true
 
       log4js.configure(config)
       const logger = log4js.getLogger()
@@ -368,8 +368,8 @@ describe(`log4js v${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.lastEvent.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.lastEvent.toString()
           // log
           level = typeof logger.custom === 'function' ? 'custom' : 'error'
           if (config.appenders.out.layout && config.appenders.out.layout.type === 'messagePassThrough') {
@@ -441,7 +441,7 @@ describe(`log4js v${version}`, function () {
       const message = 'layout testing'
       let level
 
-      ao.cfg.insertTraceIdsIntoLogs = true
+      apm.cfg.insertTraceIdsIntoLogs = true
 
       log4js.configure(config)
       const logger = log4js.getLogger()
@@ -452,7 +452,7 @@ describe(`log4js v${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
+        apm.instrument(spanName, function () {
           // log
           logger.error('Cheese is too ripe!')
         })
@@ -474,7 +474,7 @@ describe(`log4js v${version}`, function () {
     const message = 'addLayout testing'
     let level
 
-    ao.cfg.insertTraceIdsIntoLogs = true
+    apm.cfg.insertTraceIdsIntoLogs = true
 
     log4js.configure({
       appenders: {
@@ -497,7 +497,7 @@ describe(`log4js v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, function () {
+      apm.instrument(spanName, function () {
         // log
         logger.info(message)
       })
@@ -518,7 +518,7 @@ describe(`log4js v${version}`, function () {
     const message = 'addLayout testing'
     let level
 
-    ao.cfg.insertTraceIdsIntoLogs = true
+    apm.cfg.insertTraceIdsIntoLogs = true
 
     log4js.addLayout('json', function (config) {
       return function (logEvent) { return JSON.stringify(logEvent) + config.separator }
@@ -540,7 +540,7 @@ describe(`log4js v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, function () {
+      apm.instrument(spanName, function () {
         // log
         logger.info(message)
       })
@@ -562,7 +562,7 @@ describe(`log4js v${version}`, function () {
     let level
     let traceId
 
-    ao.cfg.insertTraceIdsIntoLogs = true
+    apm.cfg.insertTraceIdsIntoLogs = true
 
     log4js.configure({
       appenders: {
@@ -578,7 +578,7 @@ describe(`log4js v${version}`, function () {
     })
     const logger = log4js.getLogger()
     logger.addContext('user', 'charlie')
-    logger.addContext('trace', function () { return ao.getTraceStringForLog() })
+    logger.addContext('trace', function () { return apm.getTraceStringForLog() })
 
     function localDone () {
       checkEventInfo(eventInfo, level, message, traceId)
@@ -586,8 +586,8 @@ describe(`log4js v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, function () {
-        traceId = ao.lastEvent.toString()
+      apm.instrument(spanName, function () {
+        traceId = apm.lastEvent.toString()
         // log
         logger.info(message)
       })
@@ -608,11 +608,11 @@ describe(`log4js v${version}`, function () {
     const message = 'addLayout testing'
     let traceId
 
-    ao.cfg.insertTraceIdsIntoLogs = true
+    apm.cfg.insertTraceIdsIntoLogs = true
 
     log4js.addLayout('json', function (config) {
       return function (logEvent) {
-        logEvent.context = { ...logEvent.context, sw: ao.getTraceObjectForLog() }
+        logEvent.context = { ...logEvent.context, sw: apm.getTraceObjectForLog() }
         return JSON.stringify(logEvent)
       }
     })
@@ -638,8 +638,8 @@ describe(`log4js v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, function () {
-        traceId = ao.lastEvent.toString()
+      apm.instrument(spanName, function () {
+        traceId = apm.lastEvent.toString()
         // log
         logger.info(message)
       })
@@ -661,7 +661,7 @@ describe(`log4js v${version}`, function () {
     let level
     let traceId
 
-    ao.cfg.insertTraceIdsIntoLogs = true
+    apm.cfg.insertTraceIdsIntoLogs = true
 
     log4js.configure({
       appenders: {
@@ -675,7 +675,7 @@ describe(`log4js v${version}`, function () {
                 return 'Jake'
               },
               age: 45,
-              trace: function () { return ao.getTraceStringForLog() }
+              trace: function () { return apm.getTraceStringForLog() }
             }
           }
         }
@@ -690,8 +690,8 @@ describe(`log4js v${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, function () {
-        traceId = ao.lastEvent.toString()
+      apm.instrument(spanName, function () {
+        traceId = apm.lastEvent.toString()
         // log
         logger.info(message)
       })
@@ -713,8 +713,8 @@ describe(`log4js v${version}`, function () {
     const level = 'info'
     let traceId
 
-    ao.cfg.insertTraceIdsIntoLogs = true
-    ao.probes.express.enabled = false
+    apm.cfg.insertTraceIdsIntoLogs = true
+    apm.probes.express.enabled = false
     const express = require('express')
     const axios = require('axios')
 
@@ -727,7 +727,7 @@ describe(`log4js v${version}`, function () {
     app.get('/hello/:name', function (req, res) {
       // the trace id used by the middle ware is the one from the last event
       // which in this case comes from the express router
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       res.render('hello', Object.create({
         name: req.params.name
       }))

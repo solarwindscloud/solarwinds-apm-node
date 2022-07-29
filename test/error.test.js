@@ -2,9 +2,9 @@
 'use strict'
 
 const helper = require('./helper')
-const ao = require('..')
-const Span = ao.Span
-const Event = ao.Event
+const apm = require('..')
+const Span = apm.Span
+const Event = apm.Event
 const should = require('should') // eslint-disable-line no-unused-vars
 
 const makeSettings = helper.makeSettings
@@ -39,8 +39,8 @@ describe('error', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
   })
   after(function (done) {
     emitter.close(done)
@@ -56,7 +56,7 @@ describe('error', function () {
   //
   it('might lose a message (until the UDP problem is fixed)', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -70,7 +70,7 @@ describe('error', function () {
   // Tests
   //
   it('should add error properties to event', function () {
-    const md = ao.addon.Event.makeRandom(1)
+    const md = apm.addon.Event.makeRandom(1)
     const event = new Event('error-test', 'info', md)
     const err = new Error('test')
     event.error = err
@@ -81,7 +81,7 @@ describe('error', function () {
   })
 
   it('should set error multiple times (keeping last)', function () {
-    const md = ao.addon.Event.makeRandom(1)
+    const md = apm.addon.Event.makeRandom(1)
     const event = new Event('error-test', 'info', md)
     const first = new Error('first')
     const second = new Error('second')
@@ -96,7 +96,7 @@ describe('error', function () {
   it('should report errors in sync calls', function (done) {
     handleErrorTest(function (done) {
       try {
-        ao.instrument(testSpan, function () {
+        apm.instrument(testSpan, function () {
           throw error
         }, conf)
       } catch (e) {}
@@ -107,7 +107,7 @@ describe('error', function () {
   it('should report errors in async calls', function (complete) {
     handleErrorTest(function (done) {
       try {
-        ao.instrument(
+        apm.instrument(
           testSpan,
           function (cb) {
             setTimeout(function () {
@@ -120,7 +120,7 @@ describe('error', function () {
           }
         )
       } catch (e) {
-        ao.loggers.debug('Got error instrumenting', e)
+        apm.loggers.debug('Got error instrumenting', e)
         complete(e)
       }
     }, complete)
@@ -130,7 +130,7 @@ describe('error', function () {
     class CustomError extends Error {}
     const error = new CustomError('test')
     helper.test(emitter, function (done) {
-      ao.instrument(
+      apm.instrument(
         testSpan,
         function (cb) {
           setTimeout(function () {
@@ -159,7 +159,7 @@ describe('error', function () {
 
   it('should report errors in error-first callbacks', function (done) {
     handleErrorTest(function (done) {
-      ao.instrument(
+      apm.instrument(
         testSpan,
         function (callback) {
           callback(error)
@@ -176,7 +176,7 @@ describe('error', function () {
     class CustomError extends Error {}
     const error = new CustomError('test')
     helper.test(emitter, function (done) {
-      ao.reportError(error)
+      apm.reportError(error)
       done()
     }, [
       function (msg) {
@@ -194,8 +194,8 @@ describe('error', function () {
     let last
 
     helper.test(emitter, function (done) {
-      ao.instrument(testSpan, function (callback) {
-        ao.reportError(error)
+      apm.instrument(testSpan, function (callback) {
+        apm.reportError(error)
         callback()
       }, conf, done)
     }, [
@@ -225,7 +225,7 @@ describe('error', function () {
     handleErrorTest(function (done) {
       let rethrow = false
       try {
-        ao.instrument(testSpan, function () {
+        apm.instrument(testSpan, function () {
           throw error
         }, conf)
       } catch (e) {
@@ -241,7 +241,7 @@ describe('error', function () {
   it('should support string errors', function (done) {
     const error = 'test'
     helper.httpTest(emitter, function (done) {
-      ao.reportError(error)
+      apm.reportError(error)
       done()
     }, [
       function (msg) {
@@ -257,7 +257,7 @@ describe('error', function () {
   it('should support empty string errors', function (done) {
     const error = ''
     helper.httpTest(emitter, function (done) {
-      ao.reportError(error)
+      apm.reportError(error)
       done()
     }, [
       function (msg) {
@@ -298,8 +298,8 @@ describe('error', function () {
     }
 
     helper.httpTest(emitter, function (done) {
-      ao.reportError(error)
-      ao.reportError(error)
+      apm.reportError(error)
+      apm.reportError(error)
       done()
     }, [validate, validate], done)
   })

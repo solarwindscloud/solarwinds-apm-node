@@ -6,11 +6,11 @@
 //
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 const expect = require('chai').expect
 const util = require('util')
 
-const addon = ao.addon
+const addon = apm.addon
 
 const semver = require('semver')
 const axios = require('axios')
@@ -47,7 +47,7 @@ const options = p === 'https' ? httpsOptions : {}
 describe(`probes.${p}`, function () {
   const ctx = { driver, p }
   let emitter
-  const previousHttpEnabled = ao.probes[p].enabled
+  const previousHttpEnabled = apm.probes[p].enabled
   let clear
   let originalFlag
 
@@ -56,9 +56,9 @@ describe(`probes.${p}`, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
@@ -118,30 +118,30 @@ describe(`probes.${p}`, function () {
   // server tests
   //= ===============================================================================================
   describe(`${p}-server`, function () {
-    const conf = ao.probes[p]
+    const conf = apm.probes[p]
 
     // turn off http-client so the request is not part of the test.
     before(function () {
-      ao.probes[`${p}-client`].enabled = false
+      apm.probes[`${p}-client`].enabled = false
     })
 
     after(function () {
-      ao.probes[`${p}-client`].enabled = true
-      // ao.resetRequestStore();
+      apm.probes[`${p}-client`].enabled = true
+      // apm.resetRequestStore();
     })
 
     // disable the probe for the test that requires it.
     beforeEach(function () {
       if (this.currentTest.title === `should not report anything when ${p} probe is disabled`) {
-        ao.probes[p].enabled = false
+        apm.probes[p].enabled = false
       }
     })
 
     afterEach(function () {
       if (this.currentTest.title === `should not report anything when ${p} probe is disabled`) {
-        ao.probes[p].enabled = previousHttpEnabled
+        apm.probes[p].enabled = previousHttpEnabled
       } else if (this.currentTest.title === 'should not send a span when there is a filter for it') {
-        ao.specialUrls = undefined
+        apm.specialUrls = undefined
       }
     })
 
@@ -149,7 +149,7 @@ describe(`probes.${p}`, function () {
     // it, so compensate for it.
     it('UDP might lose a message running locally', function (done) {
       helper.test(emitter, function (done) {
-        ao.instrument('fake', function () {})
+        apm.instrument('fake', function () {})
         done()
       }, [
         function (msg) {
@@ -412,7 +412,7 @@ describe(`probes.${p}`, function () {
       })
 
       const originMetadata = addon.Event.makeRandom(1)
-      const origin = new ao.Event('span-name', 'label-name', originMetadata)
+      const origin = new apm.Event('span-name', 'label-name', originMetadata)
       const traceparent = origin.toString().split('-').map((part, index) => index === 2 ? '0'.repeat(15) : part).join('-')
 
       const logChecks = [
@@ -457,7 +457,7 @@ describe(`probes.${p}`, function () {
       })
 
       const originMetadata = addon.Event.makeRandom(1)
-      const origin = new ao.Event('span-name', 'label-name', originMetadata)
+      const origin = new apm.Event('span-name', 'label-name', originMetadata)
 
       helper.doChecks(emitter, [
         function (msg) {
@@ -521,7 +521,7 @@ describe(`probes.${p}`, function () {
     it('should not send a span or metrics when a string or regex filter matches', function (done) {
       let messageCount = 0
       let metricsCount = 0
-      ao.specialUrls = [
+      apm.specialUrls = [
         { string: '/filtered', doSample: false, doMetrics: false },
         { regex: '^/files/', doSample: false, doMetrics: false }
       ]
@@ -534,8 +534,8 @@ describe(`probes.${p}`, function () {
         metricsCount += 1
         return '/filtered'
       }
-      const previousSendHttpSpan = ao.reporter.sendHttpSpan
-      ao.reporter.sendHttpSpan = metricsSender
+      const previousSendHttpSpan = apm.reporter.sendHttpSpan
+      apm.reporter.sendHttpSpan = metricsSender
 
       const server = createServer(options, function (req, res) {
         setTimeout(function () {
@@ -558,8 +558,8 @@ describe(`probes.${p}`, function () {
         emitter.removeListener('message', deafListener)
         server.close(function () {
           // restore mockups
-          ao.specialUrls = undefined
-          ao.reporter.sendHttpSpan = previousSendHttpSpan
+          apm.specialUrls = undefined
+          apm.reporter.sendHttpSpan = previousSendHttpSpan
           // if messages were sent it's an error
           const error = messageCount === 0 && metricsCount === 0
           done(error ? undefined : new Error('messages should not be sent but were'))
@@ -600,8 +600,8 @@ describe(`probes.${p}`, function () {
     // Verify query param filtering support
     //
     it('should support query param filtering', function (done) {
-      if (ao.lastEvent) {
-        ao.loggers.debug(`${p}.test: before creating server lastEvent = %e`, ao.lastEvent)
+      if (apm.lastEvent) {
+        apm.loggers.debug(`${p}.test: before creating server lastEvent = %e`, apm.lastEvent)
       }
 
       conf.includeRemoteUrlParams = false
@@ -681,7 +681,7 @@ describe(`probes.${p}`, function () {
         res.end('done')
       })
 
-      ao.probes[p]['client-ip-header'] = 'x-real-ip'
+      apm.probes[p]['client-ip-header'] = 'x-real-ip'
       const ClientIPExpected = '777.777.333.333'
 
       helper.doChecks(emitter, [
@@ -880,10 +880,10 @@ describe(`probes.${p}`, function () {
   //
 
   describe(`${p}-client`, function () {
-    const conf = ao.probes[`${p}-client`]
+    const conf = apm.probes[`${p}-client`]
 
     after(function () {
-      ao.resetRequestStore()
+      apm.resetRequestStore()
     })
 
     it(`should trace ${p} request`, function (done) {
@@ -1067,13 +1067,13 @@ describe(`probes.${p}`, function () {
 
     it('should report socket errors when no server is listening', function (testDone) {
       // disable so we don't have to look for/exclude http spans.
-      ao.probes[p].enabled = false
+      apm.probes[p].enabled = false
       const server = createServer(options, function (req, res) {
         throw new Error('the server got a request')
       })
       // reset on exit
       function done (err) {
-        ao.probes[p].enabled = true
+        apm.probes[p].enabled = true
         server.close()
         testDone(err)
       }
@@ -1124,7 +1124,7 @@ describe(`probes.${p}`, function () {
     it('should report socket errors when the server hangs up', function (testDone) {
       // disable so we don't have to look for/exclude http spans in the
       // emitted output.
-      ao.probes[p].enabled = false
+      apm.probes[p].enabled = false
       const server = createServer(options, function (req, res) {
         // this should result in ECONNRESET.
         // https://nodejs.org/api/http.html#http_http_request_url_options_callback
@@ -1132,7 +1132,7 @@ describe(`probes.${p}`, function () {
       })
       // reset on exit
       function done (err) {
-        ao.probes[p].enabled = true
+        apm.probes[p].enabled = true
         server.close()
         testDone(err)
       }
@@ -1179,7 +1179,7 @@ describe(`probes.${p}`, function () {
     it('should not report an error if req.abort() is called', function (testDone) {
       // disable so we don't have to look for/exclude http spans in the
       // emitted output.
-      ao.probes[p].enabled = false
+      apm.probes[p].enabled = false
 
       const server = createServer(options, function (req, res) {
         // send the response
@@ -1193,7 +1193,7 @@ describe(`probes.${p}`, function () {
       })
       // reset on exit
       function done (err) {
-        ao.probes[p].enabled = true
+        apm.probes[p].enabled = true
         server.close()
         testDone(err)
       }
@@ -1251,7 +1251,7 @@ describe(`probes.${p}`, function () {
     it('should report an error when the server has a socket error', function (testDone) {
       // disable so we don't have to look for/exclude http spans in the
       // emitted output.
-      ao.probes[p].enabled = false
+      apm.probes[p].enabled = false
 
       const error = new Error('SIMULATED-SOCKET-ERROR')
 
@@ -1267,7 +1267,7 @@ describe(`probes.${p}`, function () {
       })
       // reset on exit
       function done (err) {
-        ao.probes[p].enabled = true
+        apm.probes[p].enabled = true
         server.close()
         testDone(err)
       }
@@ -1314,7 +1314,7 @@ describe(`probes.${p}`, function () {
     it.skip('should report response errors handling request', function (testDone) {
       // disable so we don't have to look for/exclude http spans in the
       // emitted output.
-      ao.probes[p].enabled = false
+      apm.probes[p].enabled = false
 
       let error
 
@@ -1328,7 +1328,7 @@ describe(`probes.${p}`, function () {
       })
       // reset on exit
       function done (err) {
-        ao.probes[p].enabled = true
+        apm.probes[p].enabled = true
         server.close()
         testDone(err)
       }

@@ -8,8 +8,8 @@
 //
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
-const addon = ao.addon
+const { apm } = require('../1.test-common')
+const addon = apm.addon
 
 const Url = require('url')
 const expect = require('chai').expect
@@ -36,15 +36,15 @@ const options = p === 'https' ? httpsOptions : {}
 
 describe(`probes.${p} websocket`, function () {
   let emitter
-  const previousHttpEnabled = ao.probes[p].enabled
-  const previousHttpClientEnabled = ao.probes[`${p}-client`].enabled
+  const previousHttpEnabled = apm.probes[p].enabled
+  const previousHttpClientEnabled = apm.probes[`${p}-client`].enabled
   let clear
   let originalFlag
 
   before(function (done) {
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
     // intercept message for analysis
     emitter = helper.backend(done)
   })
@@ -52,7 +52,7 @@ describe(`probes.${p} websocket`, function () {
     emitter.close(done)
   })
   after(function () {
-    ao.loggers.debug(`enters ${ao.Span.entrySpanEnters} exits ${ao.Span.entrySpanExits}`)
+    apm.loggers.debug(`enters ${apm.Span.entrySpanEnters} exits ${apm.Span.entrySpanExits}`)
   })
 
   //
@@ -67,8 +67,8 @@ describe(`probes.${p} websocket`, function () {
 
   beforeEach(function () {
     if (this.currentTest.title === `should not report anything when ${p} probe is disabled`) {
-      ao.probes[p].enabled = false
-      ao.probes[`${p}-client`].enabled = false
+      apm.probes[p].enabled = false
+      apm.probes[`${p}-client`].enabled = false
     } else if (this.currentTest.title === 'should trace correctly within asyncrony') {
       // this.skip()
     } else if (this.currentTest.title === 'should not send a span or metrics when there is a filter for it') {
@@ -78,10 +78,10 @@ describe(`probes.${p} websocket`, function () {
 
   afterEach(function () {
     if (this.currentTest.title === `should not report anything when ${p} probe is disabled`) {
-      ao.probes[p].enabled = previousHttpEnabled
-      ao.probes[`${p}-client`].enabled = previousHttpClientEnabled
+      apm.probes[p].enabled = previousHttpEnabled
+      apm.probes[`${p}-client`].enabled = previousHttpClientEnabled
     } else if (this.currentTest.title === 'should not send a span when there is a filter for it') {
-      ao.specialUrls = undefined
+      apm.specialUrls = undefined
     }
   })
   afterEach(function () {
@@ -149,17 +149,17 @@ describe(`probes.${p} websocket`, function () {
 
   describe(`${p}-client`, function () {
     // eslint-disable-next-line no-unused-vars
-    const conf = ao.probes[p]
+    const conf = apm.probes[p]
 
     after(function () {
-      ao.resetRequestStore()
+      apm.resetRequestStore()
     })
 
     // it's possible for a local UDP send to fail but oboe doesn't report
     // it, so compensate for it.
     it('UDP might lose a message running locally', function (done) {
       helper.test(emitter, function (done) {
-        ao.instrument('fake', function () {})
+        apm.instrument('fake', function () {})
         done()
       }, [
         function (msg) {

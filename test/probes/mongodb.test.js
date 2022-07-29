@@ -2,10 +2,10 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common.js')
+const { apm } = require('../1.test-common.js')
 
 const noop = helper.noop
-const addon = ao.addon
+const addon = apm.addon
 
 const semver = require('semver')
 const mongodb = require('mongodb')
@@ -55,9 +55,9 @@ describe('probes.mongodb UDP', function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
@@ -66,7 +66,7 @@ describe('probes.mongodb UDP', function () {
   // fake test to work around UDP dropped message issue
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', noop)
+      apm.instrument('fake', noop)
       done()
     }, [
       function (msg) {
@@ -104,16 +104,16 @@ function makeTests (db_host, host, isReplicaSet) {
   // Intercept messages for analysis
   //
   beforeEach(function (done) {
-    ao.probes.fs.enabled = false
-    ao.sampleRate = addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.probes[moduleName].collectBacktraces = false
+    apm.probes.fs.enabled = false
+    apm.sampleRate = addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.probes[moduleName].collectBacktraces = false
     emitter = helper.backend(function () {
       done()
     })
   })
   afterEach(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(function () {
       done()
     })
@@ -143,11 +143,11 @@ function makeTests (db_host, host, isReplicaSet) {
       'should count'
     ]
     if (doTheseTitles.length && doTheseTitles.indexOf(current.title) >= 0) {
-      // ao.logger.addEnabled('span');
+      // apm.logger.addEnabled('span');
     }
   })
   afterEach(function () {
-    // ao.logger.removeEnabled('span');
+    // apm.logger.removeEnabled('span');
   })
 
   //
@@ -164,7 +164,7 @@ function makeTests (db_host, host, isReplicaSet) {
       }
     })
 
-    ao.loggers.test.debug(`using dbn ${dbn}`)
+    apm.loggers.test.debug(`using dbn ${dbn}`)
 
     let server
 
@@ -180,7 +180,7 @@ function makeTests (db_host, host, isReplicaSet) {
       const mongoClient = new MongoClient(server, {})
 
       mongoClient.connect((err, _client) => {
-        ao.loggers.test.debug('mongoClient() connect callback', err)
+        apm.loggers.test.debug('mongoClient() connect callback', err)
         if (err) {
           // eslint-disable-next-line no-console
           console.log('error connecting', err)
@@ -192,7 +192,7 @@ function makeTests (db_host, host, isReplicaSet) {
         ctx.collection = db.collection(cn)
 
         db.command({ dropDatabase: 1 }, function (err) {
-          ao.loggers.test.debug('before() dropDatabase callback', err)
+          apm.loggers.test.debug('before() dropDatabase callback', err)
           done()
         })
       })
@@ -209,7 +209,7 @@ function makeTests (db_host, host, isReplicaSet) {
       }
 
       mongoClient.connect((err, _client) => {
-        ao.loggers.test.debug('mongoClient() connect callback', err)
+        apm.loggers.test.debug('mongoClient() connect callback', err)
         if (err) {
           // eslint-disable-next-line no-console
           console.log('error connecting', err)
@@ -221,7 +221,7 @@ function makeTests (db_host, host, isReplicaSet) {
         ctx.collection = db.collection(cn)
 
         db.command({ dropDatabase: 1 }, function (err) {
-          ao.loggers.test.debug('before() dropDatabase callback', err)
+          apm.loggers.test.debug('before() dropDatabase callback', err)
           done()
         })
       })
@@ -314,7 +314,7 @@ function makeTests (db_host, host, isReplicaSet) {
           db.command({ create: cn },
             function (e, data) {
               if (e) {
-                ao.loggers.error(`error creating "${cn}"`, e)
+                apm.loggers.error(`error creating "${cn}"`, e)
                 done(e)
                 return
               }
@@ -355,7 +355,7 @@ function makeTests (db_host, host, isReplicaSet) {
             },
             function (e, data) {
               if (e) {
-                ao.loggers.debug(`error renaming "${cn}" to "${dbn}.coll2-${dbn}"`, e)
+                apm.loggers.debug(`error renaming "${cn}" to "${dbn}.coll2-${dbn}"`, e)
                 done(e)
                 return
               }
@@ -390,7 +390,7 @@ function makeTests (db_host, host, isReplicaSet) {
             { drop: `coll2-${dbn}` },
             function (e, data) {
               if (e) {
-                ao.loggers.debug(`error dropping "coll2-${dbn}`, e)
+                apm.loggers.debug(`error dropping "coll2-${dbn}`, e)
                 done(e)
                 return
               }

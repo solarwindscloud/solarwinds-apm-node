@@ -5,7 +5,7 @@
 
 'use strict'
 
-const ao = require('../..')
+const apm = require('../..')
 
 const helper = require('../helper')
 const expect = require('chai').expect
@@ -115,7 +115,7 @@ describe(`probes.morgan ${version}`, function () {
   let eventInfo
 
   before(function () {
-    ao.probes.fs.enabled = false
+    apm.probes.fs.enabled = false
   })
 
   before(function () {
@@ -149,10 +149,10 @@ describe(`probes.morgan ${version}`, function () {
   //
   beforeEach(function (done) {
     // make sure we get sampled traces
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
     // default to the simple 'true'
-    ao.cfg.insertTraceIdsIntoLogs = true
+    apm.cfg.insertTraceIdsIntoLogs = true
 
     debugging = false
 
@@ -167,7 +167,7 @@ describe(`probes.morgan ${version}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () {})
+      apm.instrument('fake', function () {})
       done()
     }, [
       function (msg) {
@@ -188,7 +188,7 @@ describe(`probes.morgan ${version}`, function () {
       let traceId
 
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       logger = makeLogger()
 
       function localDone () {
@@ -197,8 +197,8 @@ describe(`probes.morgan ${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.requestStore.get('topSpan').events.exit.event.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.requestStore.get('topSpan').events.exit.event.toString()
           // log
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
@@ -230,10 +230,10 @@ describe(`probes.morgan ${version}`, function () {
       let traceId
 
       // reset in beforeEach() so set in each test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       logger = makeLogger()
-      ao.traceMode = 0
-      ao.sampleRate = 0
+      apm.traceMode = 0
+      apm.sampleRate = 0
 
       function test () {
         // log
@@ -241,7 +241,7 @@ describe(`probes.morgan ${version}`, function () {
           expect(err).not.ok
           // let the listener run
           setImmediate(function () {
-            traceId = ao.lastEvent.toString()
+            traceId = apm.lastEvent.toString()
             expect(traceId[traceId.length - 1] === '0', 'traceId should be unsampled')
             checkEventInfo(eventInfo, fakeReq, fakeRes, maybe ? undefined : traceId)
             done()
@@ -254,8 +254,8 @@ describe(`probes.morgan ${version}`, function () {
         return 'test-done'
       }
 
-      const traceparent = ao.addon.Event.makeRandom(0).toString()
-      const result = ao.startOrContinueTrace(traceparent, '', spanName, test)
+      const traceparent = apm.addon.Event.makeRandom(0).toString()
+      const result = apm.startOrContinueTrace(traceparent, '', spanName, test)
       expect(result).equal('test-done')
     })
   })
@@ -273,7 +273,7 @@ describe(`probes.morgan ${version}`, function () {
         let traceId
 
         // this gets reset in beforeEach() so set it in the test.
-        ao.cfg.insertTraceIdsIntoLogs = mode
+        apm.cfg.insertTraceIdsIntoLogs = mode
         logger = makeLogger(predefined)
 
         function localDone () {
@@ -282,8 +282,8 @@ describe(`probes.morgan ${version}`, function () {
         }
 
         helper.test(emitter, function (done) {
-          ao.instrument(spanName, function () {
-            traceId = ao.requestStore.get('topSpan').events.exit.event.toString()
+          apm.instrument(spanName, function () {
+            traceId = apm.requestStore.get('topSpan').events.exit.event.toString()
             // log
             logger(fakeReq, fakeRes, function (err) {
               expect(err).not.ok
@@ -317,7 +317,7 @@ describe(`probes.morgan ${version}`, function () {
       let traceId
 
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       logger = makeLogger('dev')
 
       function localDone () {
@@ -326,8 +326,8 @@ describe(`probes.morgan ${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.requestStore.get('topSpan').events.exit.event.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.requestStore.get('topSpan').events.exit.event.toString()
           // log
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
@@ -360,7 +360,7 @@ describe(`probes.morgan ${version}`, function () {
       let traceId
 
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       logger = makeLogger(':method :trace :url :status :res[content-length]')
 
       function localDone () {
@@ -369,8 +369,8 @@ describe(`probes.morgan ${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.requestStore.get('topSpan').events.exit.event.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.requestStore.get('topSpan').events.exit.event.toString()
           // log
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
@@ -400,7 +400,7 @@ describe(`probes.morgan ${version}`, function () {
 
     it(`should never insert in sync when mode=${mode} using a format string and no insertion is requested`, function (done) {
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       logger = makeLogger(':method :url :status :res[content-length]')
 
       function localDone () {
@@ -409,7 +409,7 @@ describe(`probes.morgan ${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
+        apm.instrument(spanName, function () {
           // log
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
@@ -439,7 +439,7 @@ describe(`probes.morgan ${version}`, function () {
 
     it(`should never insert in sync when mode=${mode} using a format function`, function (done) {
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       logger = makeLogger(function () { return 'xyzzy' })
 
       function localDone () {
@@ -448,7 +448,7 @@ describe(`probes.morgan ${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
+        apm.instrument(spanName, function () {
           // log
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
@@ -481,7 +481,7 @@ describe(`probes.morgan ${version}`, function () {
       let traceId
 
       // this gets reset in beforeEach() so set it in the test.
-      ao.cfg.insertTraceIdsIntoLogs = mode
+      apm.cfg.insertTraceIdsIntoLogs = mode
       const custom = function (tokens, req, res) {
         return [
           tokens.trace(), // the token can be used as a method in custom function
@@ -500,8 +500,8 @@ describe(`probes.morgan ${version}`, function () {
       }
 
       helper.test(emitter, function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.requestStore.get('topSpan').events.exit.event.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.requestStore.get('topSpan').events.exit.event.toString()
           // log
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
@@ -527,15 +527,15 @@ describe(`probes.morgan ${version}`, function () {
   // verify that mode 'always' inserts even when not tracing
   //
   it('mode=\'always\' should always insert a trace ID even if not tracing', function (done) {
-    ao.requestStore.run(function () {
+    apm.requestStore.run(function () {
       const traceId = `00-${'0'.repeat(32)}-${'0'.repeat(16)}-${'0'.repeat(2)}`
-      ao.lastEvent = undefined
+      apm.lastEvent = undefined
 
-      ao.cfg.insertTraceIdsIntoLogs = 'always'
+      apm.cfg.insertTraceIdsIntoLogs = 'always'
       logger = makeLogger()
-      ao.traceMode = 0
-      ao.sampleRate = 0
-      // console.log(ao.lastEvent);
+      apm.traceMode = 0
+      apm.sampleRate = 0
+      // console.log(apm.lastEvent);
 
       logger(fakeReq, fakeRes, function (err) {
         expect(err).not.ok
@@ -565,7 +565,7 @@ describe(`probes.morgan ${version}`, function () {
         expect(err).not.ok
       })
       setImmediate(function () {
-        traceId = ao.lastEvent.toString()
+        traceId = apm.lastEvent.toString()
         cb()
       })
       fakeRes.writeHead(200)
@@ -573,7 +573,7 @@ describe(`probes.morgan ${version}`, function () {
     }
 
     helper.test(emitter, function (done) {
-      ao.instrument(spanName, asyncFunction, done)
+      apm.instrument(spanName, asyncFunction, done)
     }, [
       function (msg) {
         msg.should.have.property('Layer', spanName)
@@ -597,7 +597,7 @@ describe(`probes.morgan ${version}`, function () {
     }
 
     function promiseFunction () {
-      traceId = ao.lastEvent.toString()
+      traceId = apm.lastEvent.toString()
       return new Promise((resolve, reject) => {
         logger(fakeReq, fakeRes, function (err) {
           expect(err).not.ok
@@ -611,7 +611,7 @@ describe(`probes.morgan ${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.pInstrument(spanName, promiseFunction).then(r => {
+        apm.pInstrument(spanName, promiseFunction).then(r => {
           expect(r).equal(result)
           done()
         })
@@ -629,12 +629,12 @@ describe(`probes.morgan ${version}`, function () {
 
   it('should insert trace IDs using the function directly', function (done) {
     // test does not have last span - thus force a "zeroed" trace id
-    ao.cfg.insertTraceIdsIntoLogs = 'always'
+    apm.cfg.insertTraceIdsIntoLogs = 'always'
     let traceId
 
     logger = makeLogger('traceThis::my-trace-id')
 
-    morgan.token('my-trace-id', () => ao.getTraceStringForLog())
+    morgan.token('my-trace-id', () => apm.getTraceStringForLog())
 
     function localDone () {
       checkEventInfo(eventInfo, fakeReq, fakeRes, traceId)
@@ -644,8 +644,8 @@ describe(`probes.morgan ${version}`, function () {
     helper.test(
       emitter,
       function (done) {
-        ao.instrument(spanName, function () {
-          traceId = ao.requestStore.get('topSpan').events.exit.event.toString()
+        apm.instrument(spanName, function () {
+          traceId = apm.requestStore.get('topSpan').events.exit.event.toString()
           logger(fakeReq, fakeRes, function (err) {
             expect(err).not.ok
           })

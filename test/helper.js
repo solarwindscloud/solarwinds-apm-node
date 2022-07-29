@@ -1,10 +1,10 @@
 'use strict'
 
-const { ao } = require('./1.test-common')
-exports.ao = ao
-const debug = ao.logger.debug
-const realPort = ao.port
-ao.skipSample = true
+const { apm } = require('./1.test-common')
+exports.apm = apm
+const debug = apm.logger.debug
+const realPort = apm.port
+apm.skipSample = true
 
 const Emitter = require('events').EventEmitter
 const extend = require('util')._extend
@@ -19,12 +19,12 @@ const expect = require('chai').expect
 
 Error.stackTraceLimit = 25
 
-const log = ao.loggers
+const log = apm.loggers
 
 exports.clsCheck = function () {
-  const c = ao.requestStore
+  const c = apm.requestStore
   if (!c || !c.active) {
-    throw new Error('CLS: NO ACTIVE ao-request-store NAMESPACE')
+    throw new Error('CLS: NO ACTIVE apm-request-store NAMESPACE')
   }
 }
 function ids (x) { return [x.substr(2, 40), x.substr(42, 16)] }
@@ -35,18 +35,18 @@ exports.noop = function () {}
 // each module must implement. this only provides a
 // common framework to check the environment variable.
 exports.skipTest = function (filename) {
-  if (!process.env.AO_SKIP_TEST) {
+  if (!process.env.apm_SKIP_TEST) {
     return false
   }
 
-  const skips = process.env.AO_SKIP_TEST.split(',')
+  const skips = process.env.apm_SKIP_TEST.split(',')
   const test = path.basename(filename, '.test.js')
 
   if (!~skips.indexOf(test)) {
     return false
   }
 
-  ao.loggers.warn('skipping test', test)
+  apm.loggers.warn('skipping test', test)
   return true
 }
 
@@ -64,7 +64,7 @@ if (['false', 'f', '0', 'n', 'no'].indexOf(env.SW_APM_TEST_SHOW_LOGS) >= 0) {
   // set to whatever it was with agent items removed
   process.env.DEBUG = logs
   // pseudo-log-level that has no logger.
-  ao.logLevel = 'none'
+  apm.logLevel = 'none'
 }
 
 let udpPort = 7832
@@ -93,7 +93,7 @@ exports.backend = function (done) {
   // note emitter is being handled by backend. some tests don't invoke
   // backend, only doChecks() which will need to log messages if this is
   // not active.
-  emitter.__aoActive = true
+  emitter.__apmActive = true
 
   // Forward events
   server.on('error', emitter.emit.bind(emitter, 'error'))
@@ -119,7 +119,7 @@ exports.backend = function (done) {
   // Wait for the server to become available
   server.on('listening', function () {
     const port = server.address().port
-    ao.port = port.toString()
+    apm.port = port.toString()
     emitter.port = port
     log.test.info('mock backend (port ' + port + ') listening')
     process.nextTick(done)
@@ -151,7 +151,7 @@ exports.doChecks = function (emitter, checks, done, opt = {}) {
   log.test.info(`doChecks(${checks.length}) server address ${addr.address}:${addr.port}`)
 
   function onMessage (msg) {
-    if (!emitter.__aoActive) {
+    if (!emitter.__apmActive) {
       log.test.messages('mock (' + addr.port + ') received message', msg)
     }
     const check = checks.shift()
@@ -204,17 +204,17 @@ const check = {
   }
 }
 
-const aoAggregate = Symbol('ao.test.aggregate')
+const apmAggregate = Symbol('apm.test.aggregate')
 
 exports.setAggregate = function (emitter, agConfig) {
   // set the property on the emitter. add messages and opIdMap if not
   // present.
-  emitter[aoAggregate] = Object.assign({ messages: [], opIdMap: {} }, agConfig)
+  emitter[apmAggregate] = Object.assign({ messages: [], opIdMap: {} }, agConfig)
   return emitter
 }
 
 exports.clearAggregate = function (emitter) {
-  delete emitter[aoAggregate]
+  delete emitter[apmAggregate]
   return emitter
 }
 
@@ -239,14 +239,14 @@ exports.aggregate = function (emitter, config, done) {
       config.messages.push(msg)
       const [, oid] = ids(msg['X-Trace'])
       config.opIdMap[oid] = msg
-      ao.loggers.test.debug(`=========> count ${i + 1}`)
+      apm.loggers.test.debug(`=========> count ${i + 1}`)
       // expected messages (+ 2 for the outer span)
       if (++i >= config.n + 2) {
         done(null, config)
       }
     } else {
       ignoreCount += 1
-      ao.loggers.test.debug(`=========>${ignoreCount} ignoring ${util.inspect(msg)}`)
+      apm.loggers.test.debug(`=========>${ignoreCount} ignoring ${util.inspect(msg)}`)
     }
   }
 
@@ -272,22 +272,22 @@ exports.test = function (emitter, test, validations, done) {
   validations.unshift(noop)
   validations.push(noop)
 
-  if (emitter[aoAggregate]) {
+  if (emitter[apmAggregate]) {
     // if an aggregate object has been set the aggregate messages using
-    // the aggregate configuration in emitter[aoAggregate]. this is only
+    // the aggregate configuration in emitter[apmAggregate]. this is only
     // partially implemented but is intended to enable checking all responses
     // once they have completed. that will make checking edges much more
     // straightforward and will also eliminate timeout errors when.
-    exports.aggregate(emitter, emitter[aoAggregate], done)
-    delete emitter[aoAggregate]
+    exports.aggregate(emitter, emitter[apmAggregate], done)
+    delete emitter[apmAggregate]
   } else {
     // check messages as the occur using the validations array.
     exports.doChecks(emitter, validations, done)
   }
 
-  ao.requestStore.run(function () {
-    const template = { doSample: ao.traceMode === 'enabled', doMetrics: ao.traceMode === 'enabled' }
-    const span = ao.Span.makeEntrySpan('outer', exports.makeSettings(template))
+  apm.requestStore.run(function () {
+    const template = { doSample: apm.traceMode === 'enabled', doMetrics: apm.traceMode === 'enabled' }
+    const span = apm.Span.makeEntrySpan('outer', exports.makeSettings(template))
     // span.async = true
     log.test.span('helper.test outer: %l', span)
     log.test.info('test starting')
@@ -356,10 +356,10 @@ exports.httpsTest = function (emitter, options, test, validations, done) {
 
 exports.run = function (context, path) {
   context.data = context.data || {}
-  const previous = ao.probes.fs.enabled
-  ao.probes.fs.enabled = false
+  const previous = apm.probes.fs.enabled
+  apm.probes.fs.enabled = false
   const mod = require('./probes/' + path)
-  ao.probes.fs.enabled = previous
+  apm.probes.fs.enabled = previous
 
   if (mod.data) {
     let data = mod.data
@@ -369,7 +369,7 @@ exports.run = function (context, path) {
     extend(context.data, data)
   }
 
-  context.ao = ao
+  context.apm = apm
 
   return function (done) {
     return mod.run(context, done)
@@ -573,13 +573,13 @@ exports.makeSettings = function (settings) {
     doSample: true,
     doMetrics: true,
     source: 1, // local agent config
-    rate: ao.sampleRate,
+    rate: apm.sampleRate,
     tokenBucketRate: 8,
     tokenBucketCapacity: 100
   }
 
   Object.assign(s, settings)
-  s.traceTaskId = s.metadata = ao.addon.Event.makeRandom(s.doSample)
+  s.traceTaskId = s.metadata = apm.addon.Event.makeRandom(s.doSample)
   return s
 }
 

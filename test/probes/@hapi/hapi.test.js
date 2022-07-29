@@ -7,7 +7,7 @@ const path = require('path')
 const helloDotEjs = 'hello.ejs'
 
 const helper = require(path.join(base, 'test/helper'))
-const ao = global[Symbol.for('SolarWinds.Apm.Once')]
+const apm = global[Symbol.for('SolarWinds.Apm.Once')]
 
 const axios = require('axios')
 
@@ -32,14 +32,14 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
   // Intercept messages for analysis
   //
   before(function (done) {
-    ao.probes.fs.enabled = false
+    apm.probes.fs.enabled = false
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
-    ao.probes.fs.enabled = true
+    apm.probes.fs.enabled = true
     emitter.close(done)
   })
   afterEach(function () {
@@ -232,7 +232,7 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
   }
 
   async function disabledTest () {
-    ao.probes['@hapi/vision'].enabled = false
+    apm.probes['@hapi/vision'].enabled = false
     const server = await makeViewServer()
 
     server.route({
@@ -254,7 +254,7 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
     const validations = [checks.httpEntry, checks.hapiEntry, checks.hapiExit, checks.httpExit]
 
     helper.doChecks(emitter, validations, function () {
-      ao.probes['@hapi/vision'].enabled = true
+      apm.probes['@hapi/vision'].enabled = true
       server.listener.close(_resolve)
     })
 
@@ -269,7 +269,7 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {
@@ -315,12 +315,12 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
       return result
     }
 
-    ao.cfg.domainPrefix = true
+    apm.cfg.domainPrefix = true
     let r
     try {
       r = customTransactionNameTest(custom)()
     } finally {
-      ao.cfg.domainPrefix = false
+      apm.cfg.domainPrefix = false
     }
     return r
   })
@@ -372,7 +372,7 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
         }
       })
 
-      ao.setCustomTxNameFunction('@hapi/hapi', custom)
+      apm.setCustomTxNameFunction('@hapi/hapi', custom)
 
       let _resolve
       const p = new Promise(function (resolve, reject) {
@@ -402,7 +402,7 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
             }
           }
 
-          if (ao.cfg.domainPrefix) {
+          if (apm.cfg.domainPrefix) {
             expectedCustom = customReq.headers.host + '/' + expectedCustom
           }
           msg.should.have.property('TransactionName', expectedCustom)
@@ -449,8 +449,8 @@ describe(`probes.${hapiName} ${pkg.version} ${visionText}`, function () {
         result = action
       }
 
-      if (ao.cfg.domainPrefix && what === 'tx') {
-        const prefix = ao.getDomainPrefix(request)
+      if (apm.cfg.domainPrefix && what === 'tx') {
+        const prefix = apm.getDomainPrefix(request)
         if (prefix) {
           result = prefix + '/' + result
         }

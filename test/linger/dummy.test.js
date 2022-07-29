@@ -7,10 +7,10 @@ const { startTest, endTest } = require('../1.test-common.js')
 describe('probes/dummy vz.z.z', function () {
   before(function () {
     startTest(__filename, { customFormatter: 'terse' })
-    // ao.requestStore.dumpCtx()
+    // apm.requestStore.dumpCtx()
   })
   after(function () {
-    // ao.requestStore.dumpCtx()
+    // apm.requestStore.dumpCtx()
     endTest()
   })
   beforeEach(function () {

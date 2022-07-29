@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function (ao, ctx) {
+module.exports = function (apm, ctx) {
   // common checks
   const checks = {
     entry: function (msg) {
@@ -144,12 +144,12 @@ module.exports = function (ao, ctx) {
 
   const cSanitizeText = 'should sanitize query when no value list using a callback'
   function cSanitize (done) {
-    ctx.ao.probes.pg.sanitizeSql = true
+    ctx.apm.probes.pg.sanitizeSql = true
 
     ctx.client.get().query(
       sanitizeQuery,
       function (err) {
-        ctx.ao.probes.pg.sanitizeSql = false
+        ctx.apm.probes.pg.sanitizeSql = false
         done()
       }
     )
@@ -157,15 +157,15 @@ module.exports = function (ao, ctx) {
 
   const pSanitizeText = 'should sanitize query when no value list using promises'
   function pSanitize (done) {
-    ctx.ao.probes.pg.sanitizeSql = true
+    ctx.apm.probes.pg.sanitizeSql = true
 
     ctx.client.get().query(sanitizeQuery)
       .then(res => {
-        ctx.ao.probes.pg.sanitizeSql = false
+        ctx.apm.probes.pg.sanitizeSql = false
         done()
       })
       .catch(e => {
-        ctx.ao.probes.pg.sanitizeSql = false
+        ctx.apm.probes.pg.sanitizeSql = false
         done()
       })
   }
@@ -236,23 +236,23 @@ module.exports = function (ao, ctx) {
 
   const cTagText = 'should tag queries when feature is enabledusing callback'
   function cTag (done) {
-    ctx.ao.probes.pg.tagSql = true
+    ctx.apm.probes.pg.tagSql = true
     ctx.client.get().query('SELECT $1::int AS number', ['1'], function () {
-      ctx.ao.probes.pg.tagSql = false
+      ctx.apm.probes.pg.tagSql = false
       done()
     })
   }
 
   const pTagText = 'should tag queries when feature is enabled using promises'
   function pTag (done) {
-    ctx.ao.probes.pg.tagSql = true
+    ctx.apm.probes.pg.tagSql = true
     ctx.client.get().query('SELECT $1::int AS number', ['1'])
       .then(results => {
-        ctx.ao.probes.pg.tagSql = false
+        ctx.apm.probes.pg.tagSql = false
         done()
       })
       .catch(e => {
-        ctx.ao.probes.pg.tagSql = false
+        ctx.apm.probes.pg.tagSql = false
         done(e)
       })
   }
@@ -270,23 +270,23 @@ module.exports = function (ao, ctx) {
 
   const cDisabledText = 'should do nothing when disabled using a callback'
   function cDisabled (done) {
-    ctx.ao.probes.pg.enabled = false
+    ctx.apm.probes.pg.enabled = false
     ctx.client.get().query('SELECT $1::int AS number', ['1'], function (err) {
-      ctx.ao.probes.pg.enabled = true
+      ctx.apm.probes.pg.enabled = true
       done(err)
     })
   }
 
   const pDisabledText = 'should do nothing when disabled using promises'
   function pDisabled (done) {
-    ctx.ao.probes.pg.enabled = false
+    ctx.apm.probes.pg.enabled = false
     ctx.client.get().query('SELECT $1::int AS number', ['1'])
       .then(results => {
-        ctx.ao.probes.pg.enabled = true
+        ctx.apm.probes.pg.enabled = true
         done()
       })
       .catch(e => {
-        ctx.ao.probes.pg.enabled = true
+        ctx.apm.probes.pg.enabled = true
         done(e)
       })
   }

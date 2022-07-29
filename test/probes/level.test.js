@@ -2,7 +2,7 @@
 'use strict'
 
 const helper = require('../helper')
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const fs = require('fs')
 // require level in order to test levelup/leveldown because level
@@ -29,9 +29,9 @@ describe('probes.level ' + pkg.version, function () {
   //
   before(function (done) {
     emitter = helper.backend(done)
-    ao.sampleRate = ao.addon.MAX_SAMPLE_RATE
-    ao.traceMode = 'always'
-    ao.g.testing(__filename)
+    apm.sampleRate = apm.addon.MAX_SAMPLE_RATE
+    apm.traceMode = 'always'
+    apm.g.testing(__filename)
   })
   after(function (done) {
     emitter.close(done)
@@ -47,7 +47,7 @@ describe('probes.level ' + pkg.version, function () {
       }
       fs.rmdir(dbPath, done)
     } catch (e) {
-      ao.loggers.debug(`failed to rm -rf ${dbPath}`, e)
+      apm.loggers.debug(`failed to rm -rf ${dbPath}`, e)
       done()
     }
   })
@@ -67,7 +67,7 @@ describe('probes.level ' + pkg.version, function () {
   // send failure.
   it('UDP might lose a message', function (done) {
     helper.test(emitter, function (done) {
-      ao.instrument('fake', function () { })
+      apm.instrument('fake', function () { })
       done()
     }, [
       function (msg) {

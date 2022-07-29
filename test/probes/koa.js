@@ -11,7 +11,7 @@ const koaRouterVersion = require('koa-router/package.json').version
 const helper = require('../helper')
 const axios = require('axios')
 
-const { ao } = require('../1.test-common')
+const { apm } = require('../1.test-common')
 
 const views = require('co-views')
 
@@ -121,7 +121,7 @@ exports.basic = function (emitter, done) {
 }
 
 exports.disabled = function (emitter, done) {
-  ao.probes.koa.enabled = false
+  apm.probes.koa.enabled = false
   const app = koa()
 
   app.use(function * () {
@@ -132,7 +132,7 @@ exports.disabled = function (emitter, done) {
     function (msg) { check['http-entry'](msg) },
     function (msg) { check['http-exit'](msg) }
   ], function () {
-    ao.probes.koa.enabled = true
+    apm.probes.koa.enabled = true
     server.close(done)
   })
 
@@ -168,7 +168,7 @@ exports.route = function (emitter, done) {
 }
 
 exports.route_disabled = function (emitter, done) {
-  ao.probes['koa-route'].enabled = false
+  apm.probes['koa-route'].enabled = false
   const app = koa()
 
   app.use(_.get('/hello/:name', function * hello () {
@@ -181,7 +181,7 @@ exports.route_disabled = function (emitter, done) {
     function (msg) { check['koa-exit'](msg) },
     function (msg) { check['http-exit'](msg) }
   ], function () {
-    ao.probes['koa-route'].enabled = true
+    apm.probes['koa-route'].enabled = true
     server.close(done)
   })
 
@@ -282,7 +282,7 @@ exports.router_promise = function (emitter, done) {
 }
 
 exports.router_disabled = function (emitter, done) {
-  ao.probes['koa-router'].enabled = false
+  apm.probes['koa-router'].enabled = false
   const app = koa()
 
   function * hello () {
@@ -305,7 +305,7 @@ exports.router_disabled = function (emitter, done) {
     function (msg) { check['koa-exit'](msg) },
     function (msg) { check['http-exit'](msg) }
   ], function () {
-    ao.probes['koa-router'].enabled = true
+    apm.probes['koa-router'].enabled = true
     server.close(done)
   })
 
@@ -346,7 +346,7 @@ exports.resourceRouter = function (emitter, done) {
 }
 
 exports.resourceRouter_disabled = function (emitter, done) {
-  ao.probes['koa-resource-router'].enabled = false
+  apm.probes['koa-resource-router'].enabled = false
   const app = koa()
 
   const res = new Resource('hello', {
@@ -363,7 +363,7 @@ exports.resourceRouter_disabled = function (emitter, done) {
     function (msg) { check['koa-exit'](msg) },
     function (msg) { check['http-exit'](msg) }
   ], function () {
-    ao.probes['koa-resource-router'].enabled = true
+    apm.probes['koa-resource-router'].enabled = true
     server.close(done)
   })
 
@@ -416,8 +416,8 @@ exports.render = function (emitter, done) {
 }
 
 exports.render_disabled = function (emitter, done) {
-  ao.probes['co-render'].enabled = false
-  ao.probes['http-client'].enabled = false
+  apm.probes['co-render'].enabled = false
+  apm.probes['http-client'].enabled = false
   const app = koa()
 
   app.use(function * () {
@@ -442,8 +442,8 @@ exports.render_disabled = function (emitter, done) {
   ]
 
   helper.doChecks(emitter, validations, function () {
-    ao.probes['co-render'].enabled = true
-    ao.probes['http-client'].enabled = true
+    apm.probes['co-render'].enabled = true
+    apm.probes['http-client'].enabled = true
     server.close(done)
   })
 

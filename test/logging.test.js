@@ -2,9 +2,9 @@
 'use strict'
 
 const helper = require('./helper')
-const ao = require('..')
+const apm = require('..')
 const spawnSync = require('child_process').spawnSync
-const debug = ao.logger.debug
+const debug = apm.logger.debug
 
 const util = require('util')
 const expect = require('chai').expect
@@ -20,21 +20,21 @@ const makeSettings = helper.makeSettings
 const getLevelAndText = helper.getLevelAndText
 
 describe('logging', function () {
-  const levels = ao.logLevel
+  const levels = apm.logLevel
   const logger = debug.log
 
   before(function () {
-    ao.sampleRate = 1000000
-    ao.logLevel = 'error,warn'
+    apm.sampleRate = 1000000
+    apm.logLevel = 'error,warn'
   })
 
   after(function () {
-    ao.logLevel = levels
+    apm.logLevel = levels
   })
 
   afterEach(function () {
     debug.log = logger
-    ao.logLevel = levels
+    apm.logLevel = levels
   })
 
   it('should set logging', function () {
@@ -44,27 +44,27 @@ describe('logging', function () {
       correct = level === 'solarwinds-apm:span'
       debug.enable = real
     }
-    ao.logLevel = 'span'
-    expect(ao.logLevel).equal('span')
+    apm.logLevel = 'span'
+    expect(apm.logLevel).equal('span')
     expect(correct).equal(true)
   })
 
   it('should add and remove logging', function () {
-    const levels = ao.logLevel.split(',')
-    ao.logLevelAdd('something')
+    const levels = apm.logLevel.split(',')
+    apm.logLevelAdd('something')
     levels.push('something')
-    expect(ao.logLevel).equal(levels.join(','))
+    expect(apm.logLevel).equal(levels.join(','))
 
-    ao.logLevelRemove('something')
+    apm.logLevelRemove('something')
     levels.pop()
-    expect(ao.logLevel).equal(levels.join(','))
+    expect(apm.logLevel).equal(levels.join(','))
   })
 
   it('should interact with existing debug logging correctly', function () {
     process.env.DEBUG = 'xyzzy:plover,xyzzy:dragon'
-    ao.logLevel = 'error'
+    apm.logLevel = 'error'
     expect(process.env.DEBUG.split(',')).include.members(['xyzzy:plover', 'xyzzy:dragon', 'solarwinds-apm:error'])
-    ao.logLevel = ''
+    apm.logLevel = ''
     expect(process.env.DEBUG.split(',')).include.members(['xyzzy:plover', 'xyzzy:dragon'])
   })
 
@@ -77,12 +77,12 @@ describe('logging', function () {
       expect(text).equal(msg)
       called = true
     }
-    ao.loggers.error(msg)
+    apm.loggers.error(msg)
     expect(called).equal(true, 'logger must be called')
   })
 
   it('should allow all logging to be suppressed', function () {
-    ao.logLevel = ''
+    apm.logLevel = ''
     let called = false
     let level
     let text
@@ -91,9 +91,9 @@ describe('logging', function () {
       called = true
     }
 
-    ao.loggers.error('anything')
-    ao.loggers.warn('nothing')
-    ao.loggers.debug('something')
+    apm.loggers.error('anything')
+    apm.loggers.warn('nothing')
+    apm.loggers.debug('something')
 
     if (called) {
       expect(called).equal(false, `log ${level}:${text} should not have been output`)
@@ -102,20 +102,20 @@ describe('logging', function () {
 
   it('should throw when constructing a debounced logger that does not exist', function () {
     function badLogger () {
-      return new ao.loggers.Debounce('xyzzy')
+      return new apm.loggers.Debounce('xyzzy')
     }
     expect(badLogger).throws('Debounce: level \'xyzzy\' doesn\'t exist')
   })
 
   it('should debounce repetitive logging by count', function () {
     const msg = 'test logging'
-    const aolevel = 'error'
-    let debounced = new ao.loggers.Debounce(aolevel)
+    const apmlevel = 'error'
+    let debounced = new apm.loggers.Debounce(apmlevel)
     let count = 0
     let i
     debug.log = function (output) {
       const [level, text] = getLevelAndText(output)
-      expect(level).equal('solarwinds-apm:' + aolevel)
+      expect(level).equal('solarwinds-apm:' + apmlevel)
       expect(text).equal(`[${i + 1}]${msg}`)
       count += 1
     }
@@ -124,7 +124,7 @@ describe('logging', function () {
     }
     expect(count).equal(10)
 
-    debounced = new ao.loggers.Debounce(aolevel, { deltaCount: 500 })
+    debounced = new apm.loggers.Debounce(apmlevel, { deltaCount: 500 })
     count = 0
     for (i = 0; i < 1000; i++) {
       debounced.log(msg)
@@ -137,18 +137,18 @@ describe('logging', function () {
     // don't have mocha highlight this (even yellow) as a slow test.
     this.slow(10000)
     const msg = 'test logging'
-    const aolevel = 'error'
+    const apmlevel = 'error'
     const options = {
       deltaCount: Infinity, // don't ever log due to count
       deltaTime: 1000 // log at most one time per second
     }
-    const debounced = new ao.loggers.Debounce('error', options)
+    const debounced = new apm.loggers.Debounce('error', options)
     let count = 0
     let calls = 0
 
     debug.log = function (output) {
       const [level, text] = getLevelAndText(output)
-      expect(level).equal('solarwinds-apm:' + aolevel)
+      expect(level).equal('solarwinds-apm:' + apmlevel)
       expect(text).equal('[' + calls + ']' + msg)
       count += 1
     }
@@ -175,7 +175,7 @@ describe('logging', function () {
   it('should handle standard formats correctly', function () {
     let [logger, getter] = makeLogHandler()
     debug.log = logger
-    ao.loggers.error('embed a string "%s" with a number %d', 'adventure', 98.6)
+    apm.loggers.error('embed a string "%s" with a number %d', 'adventure', 98.6)
     let [called, level, text, formatted] = getter() // eslint-disable-line no-unused-vars
     expect(called).equal(true, 'logger must be called')
     expect(level).equal('solarwinds-apm:error')
@@ -183,7 +183,7 @@ describe('logging', function () {
 
     [logger, getter] = makeLogHandler()
     debug.log = logger
-    ao.loggers.warn('embed integer %i floating %f object %o Object %O', 17.5, 17.5, [1, 2], [1, 2]);
+    apm.loggers.warn('embed integer %i floating %f object %o Object %O', 17.5, 17.5, [1, 2], [1, 2]);
     [called, level, text, formatted] = getter() // eslint-disable-line no-unused-vars
     expect(called).equal(true, 'logger must be called')
     expect(level).equal('solarwinds-apm:warn')
@@ -193,8 +193,8 @@ describe('logging', function () {
   it('should handle the extended xtrace (%x) format', function () {
     let [logger, getter] = makeLogHandler()
     debug.log = logger
-    const md = new ao.addon.Event.makeRandom() // eslint-disable-line new-cap
-    ao.loggers.error('xtrace %x', md)
+    const md = new apm.addon.Event.makeRandom() // eslint-disable-line new-cap
+    apm.loggers.error('xtrace %x', md)
     let [called, level, text, formatted] = getter() // eslint-disable-line no-unused-vars
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -202,7 +202,7 @@ describe('logging', function () {
 
     [logger, getter] = makeLogHandler()
     debug.log = logger
-    ao.loggers.error('xtrace %x', '');
+    apm.loggers.error('xtrace %x', '');
     [called, level, text, formatted] = getter()
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -210,7 +210,7 @@ describe('logging', function () {
 
     [logger, getter] = makeLogHandler()
     debug.log = logger
-    ao.loggers.error('xtrace %x', 'bad:beef:cafe');
+    apm.loggers.error('xtrace %x', 'bad:beef:cafe');
     [called, level, text, formatted] = getter()
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -218,8 +218,8 @@ describe('logging', function () {
 
     [logger, getter] = makeLogHandler()
     debug.log = logger
-    let event = new ao.addon.Event(md)
-    ao.loggers.error('native event xtrace %x', event);
+    let event = new apm.addon.Event(md)
+    apm.loggers.error('native event xtrace %x', event);
     [called, level, text, formatted] = getter()
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -227,8 +227,8 @@ describe('logging', function () {
 
     [logger, getter] = makeLogHandler()
     debug.log = logger
-    event = new ao.Event('span', 'label', md)
-    ao.loggers.error('event xtrace %x', event);
+    event = new apm.Event('span', 'label', md)
+    apm.loggers.error('event xtrace %x', event);
     [called, level, text, formatted] = getter()
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -238,7 +238,7 @@ describe('logging', function () {
     debug.log = logger
     // get uppercase, non-delimited string
     const s = md.toString()
-    ao.loggers.error('string xtrace %x', s);
+    apm.loggers.error('string xtrace %x', s);
     [called, level, text, formatted] = getter() // eslint-disable-line no-unused-vars
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -249,7 +249,7 @@ describe('logging', function () {
   // check span formatting (%l). it was done when they were called layers and %s already
   // means string.
   it('should handle the extended span (%l) format', function () {
-    const span = ao.Span.makeEntrySpan('log-span', makeSettings())
+    const span = apm.Span.makeEntrySpan('log-span', makeSettings())
     const name = span.name
     const entry = `${name}:entry`
     const exit = `${name}:exit`
@@ -258,7 +258,7 @@ describe('logging', function () {
 
     const [logger, getter] = makeLogHandler()
     debug.log = logger
-    ao.loggers.error('%l', span)
+    apm.loggers.error('%l', span)
     const [called, level, text, formatted] = getter() // eslint-disable-line no-unused-vars
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
@@ -266,14 +266,14 @@ describe('logging', function () {
   })
 
   it('should handle the extended event (%e) format', function () {
-    const md = new ao.addon.Event.makeRandom() // eslint-disable-line new-cap
+    const md = new apm.addon.Event.makeRandom() // eslint-disable-line new-cap
     const edge = false
-    const event = new ao.Event('log-event', 'entry', md, edge)
+    const event = new apm.Event('log-event', 'entry', md, edge)
     const name = 'log-event:entry'
 
     const [logger, getter] = makeLogHandler()
     debug.log = logger
-    ao.loggers.error('%e', event)
+    apm.loggers.error('%e', event)
     const [called, level, text, formatted] = getter() // eslint-disable-line no-unused-vars
     expect(called).equal(true)
     expect(level).equal('solarwinds-apm:error')
