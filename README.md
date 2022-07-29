@@ -41,7 +41,11 @@ sure it is available in the environment where your application is running:
 export SW_APM_SERVICE_KEY="api-token-here:your-service-name"
 ```
 
-Then, at the top of your main js file for your app, add this:
+Then require `solarwinds-apm` as part of your application start command, or via require() call in your entry point file before any other require() calls. Below are simple examples:
+
+```
+node -r solarwinds-apm <app.js>
+```
 
 ```
 require('solarwinds-apm')
@@ -57,10 +61,10 @@ command to invoke your program `node -r esm index.js` then `esm.js` is loaded fi
 `solarwinds-apm` is unable to instrument modules. You can use it, just make sure to require
 `solarwinds-apm` first, e.g., `node -r solarwinds-apm -r esm index.js`.
 
-If you are using the custom instrumentation SDK then SolarWinds APM must be loaded in the code
-so that a reference to the SDK is obtained, like `const ao = require('solarwinds-apm')`. It
-is still be possible to use the command line `node -r solarwinds-apm -r esm index.js`; the
-require in the code will just get a reference to the results of the command line require.
+If you are using the custom instrumentation SDK then a reference to the SDK must be obtained, 
+like `const apm = require('solarwinds-apm')`. It you  use the command line option to require
+`solarwinds-apm` (e.g. `node -r solarwinds-apm -r esm index.js`) you can access the SDK using
+`const apm = global[Symbol.for('SolarWinds.Apm.Once')]`
 
 ## Configuration
 

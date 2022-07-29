@@ -492,10 +492,10 @@ describe('custom', function () {
       let count = 0
 
       const logChecks = [
-        { level: 'error', message: 'ao.instrument() run function is' },
-        { level: 'error', message: 'ao.runInstrument found no span name or span-info()' },
-        { level: 'error', message: 'ao.runInstrument failed to build span' },
-        { level: 'error', message: 'ao.runInstrument failed to build span' },
+        { level: 'error', message: 'apm.instrument() run function is' },
+        { level: 'error', message: 'apm.runInstrument found no span name or span-info()' },
+        { level: 'error', message: 'apm.runInstrument failed to build span' },
+        { level: 'error', message: 'apm.runInstrument failed to build span' },
         { level: 'error', message: 'no name supplied to runInstrument by span-info()' }
       ]
       helper.checkLogMessages(logChecks)
@@ -547,13 +547,13 @@ describe('custom', function () {
       const psoct = 'pStartOrContinueTrace'
       const logChecks = [
         // verify nothing bad happens when run function is missing
-        { level: 'error', message: 'ao.instrument() run function is' },
+        { level: 'error', message: 'apm.instrument() run function is' },
         { level: 'error', message: `${psoct} requires a function, not ${typeof missing}` },
         // verify nothing bad happens when spanInfo() is missing
-        { level: 'error', message: 'ao.runInstrument found no span name or span-info()' },
+        { level: 'error', message: 'apm.runInstrument found no span name or span-info()' },
         { level: 'error', message: `${psoct} span argument must be a string or function, not ${typeof protoSpan}` },
         // verify the runner is still run when spanInfo fails to return a correct object
-        { level: 'error', message: 'ao.runInstrument failed to build span' },
+        { level: 'error', message: 'apm.runInstrument failed to build span' },
         { level: 'error', message: `${psoct} span-info bad values: name` },
         // verify the runner is still run when spanInfo() fails to return a name
         { level: 'error', message: 'no name supplied to runInstrument by span-info()' },
@@ -604,8 +604,8 @@ describe('custom', function () {
       let count = 0
 
       const logChecks = [
-        { level: 'error', message: 'ao.runInstrument failed to build span' },
-        { level: 'error', message: 'ao.runInstrument failed to build span' }
+        { level: 'error', message: 'apm.runInstrument failed to build span' },
+        { level: 'error', message: 'apm.runInstrument failed to build span' }
       ]
       helper.checkLogMessages(logChecks)
 

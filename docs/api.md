@@ -1,7 +1,7 @@
 ## Classes
 
 <dl>
-<dt><a href="#ao">ao</a></dt>
+<dt><a href="#apm">apm</a></dt>
 <dd></dd>
 <dt><a href="#Span">Span</a></dt>
 <dd></dd>
@@ -24,42 +24,42 @@
 <dd></dd>
 </dl>
 
-<a name="ao"></a>
+<a name="apm"></a>
 
-## ao
+## apm
 **Kind**: global class  
 
-* [ao](#ao)
-    * [.logLevel](#ao.logLevel)
-    * [.loggers](#ao.loggers)
-    * [.traceMode](#ao.traceMode)
-    * [.tracing](#ao.tracing)
-    * [.traceId](#ao.traceId)
-    * [.logLevelAdd(levels)](#ao.logLevelAdd) ⇒ <code>string</code> \| <code>undefined</code>
-    * [.logLevelRemove(levels)](#ao.logLevelRemove) ⇒ <code>string</code> \| <code>undefined</code>
-    * [.backtrace()](#ao.backtrace) ⇒ <code>string</code>
-    * [.bind(fn)](#ao.bind) ⇒ <code>function</code>
-    * [.bindEmitter(em)](#ao.bindEmitter) ⇒ <code>EventEmitter</code>
-    * [.setCustomTxNameFunction(probe, fn)](#ao.setCustomTxNameFunction) ⇒ <code>boolean</code>
-    * [.readyToSample(ms, [obj])](#ao.readyToSample) ⇒ <code>boolean</code>
-    * [.sampling(item)](#ao.sampling) ⇒ <code>boolean</code>
-    * [.traceToEvent(traceparent)](#ao.traceToEvent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
-    * [.instrumentHttp(span, run, [options], res)](#ao.instrumentHttp) ⇒
-    * [.instrument(span, run, [options], [callback])](#ao.instrument) ⇒ <code>value</code>
-    * [.pInstrument(span, run, [options])](#ao.pInstrument) ⇒ <code>Promise</code>
-    * [.startOrContinueTrace(traceparent, tracestate, span, runner, [opts], [callback])](#ao.startOrContinueTrace) ⇒ <code>value</code>
-    * [.pStartOrContinueTrace(traceparent, tracestate, span, run, [opts])](#ao.pStartOrContinueTrace) ⇒ <code>Promise</code>
-    * [.reportError(error)](#ao.reportError)
-    * [.reportInfo(data)](#ao.reportInfo)
-    * [.sendMetrics(metrics, [gopts])](#ao.sendMetrics) ⇒ [<code>SendMetricsReturn</code>](#SendMetricsReturn)
-    * [.getTraceObjectForLog()](#ao.getTraceObjectForLog) ⇒ <code>object</code>
-    * [.getTraceStringForLog([delimiter])](#ao.getTraceStringForLog) ⇒ <code>string</code>
-    * [.wrapLambdaHandler([handler])](#ao.wrapLambdaHandler) ⇒ <code>function</code>
+* [apm](#apm)
+    * [.logLevel](#apm.logLevel)
+    * [.loggers](#apm.loggers)
+    * [.traceMode](#apm.traceMode)
+    * [.tracing](#apm.tracing)
+    * [.traceId](#apm.traceId)
+    * [.logLevelAdd(levels)](#apm.logLevelAdd) ⇒ <code>string</code> \| <code>undefined</code>
+    * [.logLevelRemove(levels)](#apm.logLevelRemove) ⇒ <code>string</code> \| <code>undefined</code>
+    * [.backtrace()](#apm.backtrace) ⇒ <code>string</code>
+    * [.bind(fn)](#apm.bind) ⇒ <code>function</code>
+    * [.bindEmitter(em)](#apm.bindEmitter) ⇒ <code>EventEmitter</code>
+    * [.setCustomTxNameFunction(probe, fn)](#apm.setCustomTxNameFunction) ⇒ <code>boolean</code>
+    * [.readyToSample(ms, [obj])](#apm.readyToSample) ⇒ <code>boolean</code>
+    * [.sampling(item)](#apm.sampling) ⇒ <code>boolean</code>
+    * [.traceToEvent(traceparent)](#apm.traceToEvent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
+    * [.instrumentHttp(span, run, [options], res)](#apm.instrumentHttp) ⇒
+    * [.instrument(span, run, [options], [callback])](#apm.instrument) ⇒ <code>value</code>
+    * [.pInstrument(span, run, [options])](#apm.pInstrument) ⇒ <code>Promise</code>
+    * [.startOrContinueTrace(traceparent, tracestate, span, runner, [opts], [callback])](#apm.startOrContinueTrace) ⇒ <code>value</code>
+    * [.pStartOrContinueTrace(traceparent, tracestate, span, run, [opts])](#apm.pStartOrContinueTrace) ⇒ <code>Promise</code>
+    * [.reportError(error)](#apm.reportError)
+    * [.reportInfo(data)](#apm.reportInfo)
+    * [.sendMetrics(metrics, [gopts])](#apm.sendMetrics) ⇒ [<code>SendMetricsReturn</code>](#SendMetricsReturn)
+    * [.getTraceObjectForLog()](#apm.getTraceObjectForLog) ⇒ <code>object</code>
+    * [.getTraceStringForLog([delimiter])](#apm.getTraceStringForLog) ⇒ <code>string</code>
+    * [.wrapLambdaHandler([handler])](#apm.wrapLambdaHandler) ⇒ <code>function</code>
 
-<a name="ao.logLevel"></a>
+<a name="apm.logLevel"></a>
 
-### ao.logLevel
-**Kind**: static property of [<code>ao</code>](#ao)  
+### apm.logLevel
+**Kind**: static property of [<code>apm</code>](#apm)  
 **Properties**
 
 | Type | Description |
@@ -68,43 +68,43 @@
 
 **Example** *(Sets the log settings)*  
 ```js
-ao.logLevel = 'warn,error'
+apm.logLevel = 'warn,error'
 ```
 **Example** *(Get the log settings)*  
 ```js
-var settings = ao.logLevel
+var settings = apm.logLevel
 ```
-<a name="ao.loggers"></a>
+<a name="apm.loggers"></a>
 
-### ao.loggers
+### apm.loggers
 Expose debug logging global and create a function to turn
 logging on/off.
 
-**Kind**: static property of [<code>ao</code>](#ao)  
+**Kind**: static property of [<code>apm</code>](#apm)  
 **Properties**
 
 | Type | Description |
 | --- | --- |
 | <code>object</code> | the loggers available for use |
 
-<a name="ao.traceMode"></a>
+<a name="apm.traceMode"></a>
 
-### ao.traceMode
+### apm.traceMode
 Get and set the trace mode
 
-**Kind**: static property of [<code>ao</code>](#ao)  
+**Kind**: static property of [<code>apm</code>](#apm)  
 **Properties**
 
 | Type | Description |
 | --- | --- |
 | <code>string</code> | the sample mode |
 
-<a name="ao.tracing"></a>
+<a name="apm.tracing"></a>
 
-### ao.tracing
+### apm.tracing
 Return whether or not the current code path is being traced.
 
-**Kind**: static property of [<code>ao</code>](#ao)  
+**Kind**: static property of [<code>apm</code>](#apm)  
 **Read only**: true  
 **Properties**
 
@@ -112,12 +112,12 @@ Return whether or not the current code path is being traced.
 | --- |
 | <code>boolean</code> | 
 
-<a name="ao.traceId"></a>
+<a name="apm.traceId"></a>
 
-### ao.traceId
+### apm.traceId
 Get X-Trace ID of the last event
 
-**Kind**: static property of [<code>ao</code>](#ao)  
+**Kind**: static property of [<code>apm</code>](#apm)  
 **Read only**: true  
 **Properties**
 
@@ -125,12 +125,12 @@ Get X-Trace ID of the last event
 | --- | --- |
 | <code>string</code> | the trace ID as a string or undefined if not tracing. |
 
-<a name="ao.logLevelAdd"></a>
+<a name="apm.logLevelAdd"></a>
 
-### ao.logLevelAdd(levels) ⇒ <code>string</code> \| <code>undefined</code>
+### apm.logLevelAdd(levels) ⇒ <code>string</code> \| <code>undefined</code>
 Add log levels to the existing set of log levels.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>string</code> \| <code>undefined</code> - - the current log levels or undefined if an error  
 
 | Param | Type | Description |
@@ -139,14 +139,14 @@ Add log levels to the existing set of log levels.
 
 **Example**  
 ```js
-ao.logLevelAdd('warn,debug')
+apm.logLevelAdd('warn,debug')
 ```
-<a name="ao.logLevelRemove"></a>
+<a name="apm.logLevelRemove"></a>
 
-### ao.logLevelRemove(levels) ⇒ <code>string</code> \| <code>undefined</code>
+### apm.logLevelRemove(levels) ⇒ <code>string</code> \| <code>undefined</code>
 Remove log levels from the current set.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>string</code> \| <code>undefined</code> - - log levels after removals or undefined if an
                              error.  
 
@@ -156,23 +156,23 @@ Remove log levels from the current set.
 
 **Example**  
 ```js
-var previousLogLevel = ao.logLevel
-ao.logLevelAdd('debug')
-ao.logLevelRemove(previousLogLevel)
+var previousLogLevel = apm.logLevel
+apm.logLevelAdd('debug')
+apm.logLevelRemove(previousLogLevel)
 ```
-<a name="ao.backtrace"></a>
+<a name="apm.backtrace"></a>
 
-### ao.backtrace() ⇒ <code>string</code>
+### apm.backtrace() ⇒ <code>string</code>
 Generate a backtrace string
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>string</code> - the backtrace  
-<a name="ao.bind"></a>
+<a name="apm.bind"></a>
 
-### ao.bind(fn) ⇒ <code>function</code>
+### apm.bind(fn) ⇒ <code>function</code>
 Bind a function to the CLS context if tracing.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>function</code> - The bound function or the unmodified argument if it can't
   be bound.  
 
@@ -180,25 +180,25 @@ Bind a function to the CLS context if tracing.
 | --- | --- | --- |
 | fn | <code>function</code> | The function to bind to the context |
 
-<a name="ao.bindEmitter"></a>
+<a name="apm.bindEmitter"></a>
 
-### ao.bindEmitter(em) ⇒ <code>EventEmitter</code>
+### apm.bindEmitter(em) ⇒ <code>EventEmitter</code>
 Bind an emitter if tracing
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>EventEmitter</code> - The bound emitter or the original emitter if an error.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | em | <code>EventEmitter</code> | The emitter to bind to the trace context |
 
-<a name="ao.setCustomTxNameFunction"></a>
+<a name="apm.setCustomTxNameFunction"></a>
 
-### ao.setCustomTxNameFunction(probe, fn) ⇒ <code>boolean</code>
+### apm.setCustomTxNameFunction(probe, fn) ⇒ <code>boolean</code>
 Set a custom transaction name function for a specific probe. This is
 most commonly used when setting custom names for all or most routes.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>boolean</code> - true if successfully set else false  
 
 | Param | Type | Description |
@@ -212,13 +212,13 @@ most commonly used when setting custom names for all or most routes.
 express: customFunction (req, res)
 hapi/hapi: customFunction (request)
 ```
-<a name="ao.readyToSample"></a>
+<a name="apm.readyToSample"></a>
 
-### ao.readyToSample(ms, [obj]) ⇒ <code>boolean</code>
+### apm.readyToSample(ms, [obj]) ⇒ <code>boolean</code>
 Check whether the agent is ready to sample. It will wait up to
 the specified number of milliseconds before returning.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>boolean</code> - - true if ready to sample; false if not  
 
 | Param | Type | Description |
@@ -226,25 +226,25 @@ the specified number of milliseconds before returning.
 | ms | <code>Number</code> | milliseconds to wait; default 0 means don't wait (poll). |
 | [obj] | <code>Object</code> | if present obj.status will receive low level status |
 
-<a name="ao.sampling"></a>
+<a name="apm.sampling"></a>
 
-### ao.sampling(item) ⇒ <code>boolean</code>
+### apm.sampling(item) ⇒ <code>boolean</code>
 Determine if the sample flag is set for the various forms of
  data.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>boolean</code> - - true if the sample flag is set else false.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | item | <code>string</code> \| [<code>Event</code>](#Event) \| <code>addon.Event</code> | the item to get the sampling flag of |
 
-<a name="ao.traceToEvent"></a>
+<a name="apm.traceToEvent"></a>
 
-### ao.traceToEvent(traceparent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
+### apm.traceToEvent(traceparent) ⇒ <code>addon.Event</code> \| <code>undefined</code>
 Convert an traceparent ID to an event containing the task ID and op ID.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>addon.Event</code> \| <code>undefined</code> - - addon.Event object
                                      containing an internal
                                      format of the traceparent
@@ -255,12 +255,12 @@ Convert an traceparent ID to an event containing the task ID and op ID.
 | --- | --- | --- |
 | traceparent | <code>string</code> | traceparent ID |
 
-<a name="ao.instrumentHttp"></a>
+<a name="apm.instrumentHttp"></a>
 
-### ao.instrumentHttp(span, run, [options], res) ⇒
+### apm.instrumentHttp(span, run, [options], res) ⇒
 Instrument HTTP request/response
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: the value returned by the run function or undefined if it can't be run.  
 
 | Param | Type | Description |
@@ -272,12 +272,12 @@ Instrument HTTP request/response
 | [options.collectBacktraces] | <code>object</code> | collect backtraces |
 | res | <code>HTTPResponse</code> | HTTP response to patch |
 
-<a name="ao.instrument"></a>
+<a name="apm.instrument"></a>
 
-### ao.instrument(span, run, [options], [callback]) ⇒ <code>value</code>
+### apm.instrument(span, run, [options], [callback]) ⇒ <code>value</code>
 Apply custom instrumentation to a synchronous or async-callback function.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>value</code> - the value returned by the run function or undefined if it can't be run  
 
 | Param | Type | Default | Description |
@@ -307,7 +307,7 @@ function run () {
   // do things with contents
 }
 
-ao.instrument(spanInfo, run)
+apm.instrument(spanInfo, run)
 ```
 **Example**  
 ```js
@@ -334,14 +334,14 @@ function callback (err, data) {
   console.log('file contents are: ' + data)
 }
 
-ao.instrument(spanInfo, run, callback)
+apm.instrument(spanInfo, run, callback)
 ```
-<a name="ao.pInstrument"></a>
+<a name="apm.pInstrument"></a>
 
-### ao.pInstrument(span, run, [options]) ⇒ <code>Promise</code>
+### apm.pInstrument(span, run, [options]) ⇒ <code>Promise</code>
 Apply custom instrumentation to a promise-returning asynchronous function.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>Promise</code> - the value returned by the run function or undefined if it can't be run  
 
 | Param | Type | Default | Description |
@@ -372,16 +372,16 @@ function run () {
   })
 }
 
-ao.pInstrument(spanInfo, run).then(...)
+apm.pInstrument(spanInfo, run).then(...)
 ```
-<a name="ao.startOrContinueTrace"></a>
+<a name="apm.startOrContinueTrace"></a>
 
-### ao.startOrContinueTrace(traceparent, tracestate, span, runner, [opts], [callback]) ⇒ <code>value</code>
+### apm.startOrContinueTrace(traceparent, tracestate, span, runner, [opts], [callback]) ⇒ <code>value</code>
 Start or continue a trace. Continue is in the sense of continuing a
 trace based on an X-Trace ID received from an external source, e.g.,
 HTTP headers or message queue headers.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>value</code> - the value returned by the run function or undefined if it can't be run  
 
 | Param | Type | Default | Description |
@@ -399,7 +399,7 @@ HTTP headers or message queue headers.
 
 **Example**  
 ```js
-ao.startOrContinueTrace(
+apm.startOrContinueTrace(
   null,
   'sync-span-name',
   functionToRun,           // synchronous so function takes no arguments
@@ -408,7 +408,7 @@ ao.startOrContinueTrace(
 ```
 **Example**  
 ```js
-ao.startOrContinueTrace(
+apm.startOrContinueTrace(
   null,
   'sync-span-name',
   functionToRun,
@@ -428,7 +428,7 @@ function asyncFunctionToRun (cb) {
 }
 // and realCallback is supplied as the optional callback parameter
 
-ao.startOrContinueTrace(
+apm.startOrContinueTrace(
   null,
   'async-span-name',
   asyncFunctionToRun,     // async, so function takes one argument
@@ -436,14 +436,14 @@ ao.startOrContinueTrace(
   realCallback            // receives request's callback arguments.
 )
 ```
-<a name="ao.pStartOrContinueTrace"></a>
+<a name="apm.pStartOrContinueTrace"></a>
 
-### ao.pStartOrContinueTrace(traceparent, tracestate, span, run, [opts]) ⇒ <code>Promise</code>
+### apm.pStartOrContinueTrace(traceparent, tracestate, span, run, [opts]) ⇒ <code>Promise</code>
 Start or continue a trace running a function that returns a promise. Continue is in
 the sense of continuing a trace based on an X-Trace ID received from an external
 source, e.g., HTTP headers or message queue headers.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>Promise</code> - the value returned by the run function or undefined if it can't be run  
 
 | Param | Type | Default | Description |
@@ -472,37 +472,37 @@ function functionToRun () {
   })
 }
 
-ao.pStartOrContinueTrace(
+apm.pStartOrContinueTrace(
   null,
   spanInfo,
   functionToRun,
 ).then(...)
 ```
-<a name="ao.reportError"></a>
+<a name="apm.reportError"></a>
 
-### ao.reportError(error)
+### apm.reportError(error)
 Report an error event in the current trace.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | error | <code>Error</code> | The error instance to report |
 
-<a name="ao.reportInfo"></a>
+<a name="apm.reportInfo"></a>
 
-### ao.reportInfo(data)
+### apm.reportInfo(data)
 Report an info event in the current trace.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | data | <code>object</code> | Data to report in the info event |
 
-<a name="ao.sendMetrics"></a>
+<a name="apm.sendMetrics"></a>
 
-### ao.sendMetrics(metrics, [gopts]) ⇒ [<code>SendMetricsReturn</code>](#SendMetricsReturn)
+### apm.sendMetrics(metrics, [gopts]) ⇒ [<code>SendMetricsReturn</code>](#SendMetricsReturn)
 Send custom metrics. There are two types of metrics:
 1) count-based - the number of times something has occurred (no
                  value is associated with this type)
@@ -511,7 +511,7 @@ Send custom metrics. There are two types of metrics:
 The metrics submitted are aggregated by metric name and tag(s), then
 sent every 60 seconds.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -523,11 +523,11 @@ sent every 60 seconds.
 **Example**  
 ```js
 // send a single metric
-ao.sendMetrics({name: 'my.counts.basic'});
-ao.sendMetrics({name: 'my.values.some', value: 42.42});
+apm.sendMetrics({name: 'my.counts.basic'});
+apm.sendMetrics({name: 'my.values.some', value: 42.42});
 
 // send multiple metrics (most efficient)
-ao.sendMetrics([
+apm.sendMetrics([
   // default count is 1
   {name: 'my.counts.defaulted'},
   {name: 'my.counts.multiple', count: 3},
@@ -537,17 +537,17 @@ ao.sendMetrics([
 ]);
 
 // add tags that can be used for filtering on the host
-ao.sendMetrics([
+apm.sendMetrics([
   {name: 'my.metric.end-of-file', tags: {class: 'error', subsystem: 'fs'}}
 ]);
 
 // add a hostname tag automatically.
-ao.sendMetrics([
+apm.sendMetrics([
   {name: 'my.metric.end-of-file', tags: {class: 'error'}, addHostTag: true}
 ]);
 
 // add a hostname tag and an application tag to each metric.
-ao.sendMetrics(
+apm.sendMetrics(
   [
     {name: 'my.metric', tags: {class: 'status'}},
     {name: 'my.time', value: 33.3, tags: {class: 'performance'}}
@@ -557,7 +557,7 @@ ao.sendMetrics(
 
 // default class to 'status' for metrics that don't supply a class
 // tag.
-ao.sendMetrics(
+apm.sendMetrics(
   [
     {name: 'my.metric'},
     {name: 'my.time', value: 33.3, tags: {class: 'performance'}}
@@ -565,19 +565,19 @@ ao.sendMetrics(
   {tags: {class: 'status'}}
 );
 ```
-<a name="ao.getTraceObjectForLog"></a>
+<a name="apm.getTraceObjectForLog"></a>
 
-### ao.getTraceObjectForLog() ⇒ <code>object</code>
+### apm.getTraceObjectForLog() ⇒ <code>object</code>
 Return an object representation of the trace containing trace_id, span_id, trace_flags. The primary intended use for this is
 to insert custom tokens in log packages.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>object</code> - - the trace log  object (e.g. { trace_id:..., span_id: ..., trace_flages: ...})  
 **Example**  
 ```js
 log4js.addLayout('json', function (config) {
   return function (logEvent) {
-    logEvent.context = { ...logEvent.context, ...ao.getTraceObjectForLog() }
+    logEvent.context = { ...logEvent.context, ...apm.getTraceObjectForLog() }
     return JSON.stringify(logEvent)
   }
 })
@@ -592,13 +592,13 @@ log4js.configure({
 const logger = log4js.getLogger()
 logger.info('doing something.')
 ```
-<a name="ao.getTraceStringForLog"></a>
+<a name="apm.getTraceStringForLog"></a>
 
-### ao.getTraceStringForLog([delimiter]) ⇒ <code>string</code>
+### apm.getTraceStringForLog([delimiter]) ⇒ <code>string</code>
 Return text delimited representation of the trace containing trace_id, span_id, trace_flags. The primary intended use for this is
 to insert custom tokens in log packages.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>string</code> - - the trace log string (e.g. trace_id:... span_id: ..., trace_flages: ...)  
 
 | Param | Type | Description |
@@ -619,7 +619,7 @@ log4js.configure({
             return 'Jake'
           },
           trace: function () {
-            return typeof ao !=='undefined' ? ao.getTraceStringForLog() : ''
+            return typeof apm !=='undefined' ? apm.getTraceStringForLog() : ''
           }
         }
       }
@@ -630,12 +630,12 @@ log4js.configure({
 const logger = log4js.getLogger()
 logger.info('token from api')
 ```
-<a name="ao.wrapLambdaHandler"></a>
+<a name="apm.wrapLambdaHandler"></a>
 
-### ao.wrapLambdaHandler([handler]) ⇒ <code>function</code>
+### apm.wrapLambdaHandler([handler]) ⇒ <code>function</code>
 Wrap the lambda handler function so it can be traced by AppOptics APM.
 
-**Kind**: static method of [<code>ao</code>](#ao)  
+**Kind**: static method of [<code>apm</code>](#apm)  
 **Returns**: <code>function</code> - - an async function, wrapping handler, to be used
                       instead of handler.  
 
@@ -645,9 +645,9 @@ Wrap the lambda handler function so it can be traced by AppOptics APM.
 
 **Example**  
 ```js
-const ao = require('appoptics-apm');
+const apm = require('appoptics-apm');
 
-const wrappedHandler = ao.wrapLambdaHandler(myHandler);
+const wrappedHandler = apm.wrapLambdaHandler(myHandler);
 
 async function myHandler (event, context) {
   // implementation
@@ -659,9 +659,9 @@ exports.handler = wrappedHandler;
 ```
 **Example**  
 ```js
-const ao = require('appoptics-apm');
+const apm = require('appoptics-apm');
 
-const wrappedHandler = ao.wrapLambdaHandler(myHandler);
+const wrappedHandler = apm.wrapLambdaHandler(myHandler);
 
 function myHandler (event, context, callback) {
   // implementation
@@ -711,7 +711,7 @@ Create an execution span.
 
 **Example**  
 ```js
-var span = new Span('fs', ao.lastEvent, {
+var span = new Span('fs', apm.lastEvent, {
   File: file
 })
 ```
@@ -840,7 +840,7 @@ span.exit()
 // manually and bind the callback to maintain the trace context
 span.async = true
 span.enter()
-asyncCallToTrace(ao.bind(function (err, res) {
+asyncCallToTrace(apm.bind(function (err, res) {
   span.exit()
   callback(err, res)
 }))
@@ -921,7 +921,7 @@ header was attached to an inbound HTTP/HTTPS request.
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>string</code> | the name for the span. |
-| settings | <code>object</code> | the object returned by ao.getTraceSettings() |
+| settings | <code>object</code> | the object returned by apm.getTraceSettings() |
 | kvpairs | <code>object</code> | key/value pairs to be added to the entry event |
 
 <a name="Event"></a>
@@ -946,7 +946,7 @@ Create an event
 | --- | --- | --- |
 | span | <code>string</code> | name of the event's span |
 | label | <code>string</code> | Event label (usually entry or exit) |
-| parent | <code>aob.Event</code> | supplies the taskId to construct the event from. |
+| parent | <code>apmb.Event</code> | supplies the taskId to construct the event from. |
 | edge | <code>boolean</code> | This should edge back to the parent |
 
 <a name="Event+set"></a>

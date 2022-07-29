@@ -96,7 +96,7 @@ describe('custom (without native bindings present)', function () {
     const store = ao.requestStore
 
     assert(typeof store === 'object')
-    assert(store.name === 'ao-cls-context')
+    assert(store.name === 'apm-cls-context')
     assert(store.constructor.name === 'Namespace')
   })
 
